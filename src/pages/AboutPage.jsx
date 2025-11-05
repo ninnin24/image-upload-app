@@ -12,7 +12,7 @@ function AboutPage() {
     // กำหนด Home Link ตาม Role
     const homePath = userRole === 'admin' ? '/admin/dashboard' : '/user/dashboard';
     
-    // โค้ด HTML/CSS ที่แปลงเป็น JSX แล้ว
+   
     return (
         <div className="about-page-wrapper">
             <header className="about-header">

@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+
+:root {
+  --primary-dark: #005377;
+  --primary-main: #00AEEF;
+  --primary-light: #87CEEB;
+  --accent: #FF7F50;
+  --bg-default: #E0F7FA;
+  --bg-paper: #AEEEEE;
+  --text-primary: #003F5C;
+  --font-family: 'Sarabun', sans-serif;
+}
+
+/* Layout */
+.upload-wrapper {
+  font-family: var(--font-family);
+  background-color: var(--bg-default);
+  min-height: 100vh;
+}
+
+/* Header */
+.upload-header {
+  background-color: var(--primary-dark);
+  color: white;
+  padding: 15px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.upload-logo {
+  font-weight: 700;
+  font-size: 1.5em;
+}
+
+.upload-nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  transition: 0.2s;
+}
+
+.upload-nav a.active,
+.upload-nav a:hover {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.user-role {
+  display: flex;
+  align-items: center;
+}
+
+.role-tag {
+  background: var(--accent);
+  padding: 3px 8px;
+  border-radius: 5px;
+  margin-right: 8px;
+}
+
+/* Main */
+.upload-main {
+  padding: 50px;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.upload-main h2 {
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+}
+
+.desc {
+  color: var(--primary-light);
+  margin-bottom: 20px;
+}
+
+/* Upload Box */
+.upload-box {
+  background: var(--bg-paper);
+  border-radius: 10px;
+  padding: 30px;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+#uploadInput {
+  display: block;
+  margin: 10px auto 20px auto;
+  font-size: 1em;
+}
+
+.preview-box {
+  margin-top: 15px;
+}
+
+.preview-box img {
+  width: 200px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid var(--primary-light);
+}
+
+.file-name {
+  margin-top: 10px;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+.upload-btn {
+  background-color: var(--primary-main);
+  color: white;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: var(--accent);
+}

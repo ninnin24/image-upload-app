@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css'; 
 
 // 🎯 นำเข้ารูปภาพโลโก้
-import HappySoftLogo from '../assets/happysoft2.jpg'; 
+import HappySoftLogo from '../assets/fileflowz2.png'; 
 
 // 🔗 กำหนด API_URL
 const API_URL = 'http://172.18.20.45:8080'; 

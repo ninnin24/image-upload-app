@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+/* 🎨 FileFlow Theme */
+:root {
+    /* Primary Ocean Blue Shades */
+    --primary-dark: #005377;
+    --primary-main: #00AEEF;
+    --primary-light: #87CEEB;
+
+    /* Secondary Turquoise */
+    --secondary-dark: #2CA3A3;
+    --secondary-main: #40E0D0;
+    --secondary-light: #AEEEEE;
+
+    /* Coral Accent */
+    --accent-main: #FF7F50;
+
+    /* Backgrounds */
+    --background-default: #E0F7FA;
+    --background-paper: #AEEEEE;
+
+    /* Text */
+    --text-primary: #003F5C;
+    --text-secondary: #007F91;
+    --text-accent: #FF7F50;
+
+    /* Gradient */
+    --gradient-flow: linear-gradient(135deg, #005377, #00AEEF, #87CEEB);
+
+    --font-main: 'Sarabun', sans-serif;
+}
+
+/* 🌐 Base */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--background-default);
+    color: var(--text-primary);
+}
+
+/* Utility */
+.text-accent {
+    color: var(--text-accent);
+}
+
+.btn-primary {
+    background: var(--gradient-flow);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+/* 🎨 FileFlow Theme */
+:root {
+    /* Primary Ocean Blue Shades */
+    --primary-dark: #005377;
+    --primary-main: #00AEEF;
+    --primary-light: #87CEEB;
+
+    /* Secondary Turquoise */
+    --secondary-dark: #2CA3A3;
+    --secondary-main: #40E0D0;
+    --secondary-light: #AEEEEE;
+
+    /* Coral Accent */
+    --accent-main: #FF7F50;
+
+    /* Backgrounds */
+    --background-default: #E0F7FA;
+    --background-paper: #AEEEEE;
+
+    /* Text */
+    --text-primary: #003F5C;
+    --text-secondary: #007F91;
+    --text-accent: #FF7F50;
+
+    /* Gradient */
+    --gradient-flow: linear-gradient(135deg, #005377, #00AEEF, #87CEEB);
+
+    --font-main: 'Sarabun', sans-serif;
+}
+
+/* 🌐 Base */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--background-default);
+    color: var(--text-primary);
+}
+
+/* Utility */
+.text-accent {
+    color: var(--text-accent);
+}
+
+.btn-primary {
+    background: var(--gradient-flow);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}

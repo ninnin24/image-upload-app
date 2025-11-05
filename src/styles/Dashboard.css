@@ -1,227 +1,156 @@
-/* ------------------------------------
-   🎨 HAPPY SOFT DASHBOARD THEME
-   ฟอนต์ Sarabun + สีส้มเต็ม Header/Sidebar
------------------------------------- */
+@import './theme.css';
 
-/* --- Import Font --- */
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-
-/* --- Variables --- */
-:root {
-    --primary-orange: #FF8C00;
-    --secondary-orange: #FFA733;
-    --light-orange: #FFF3E0;
-    --background: #FFFDF9;
-    --text: #333333;
-    --white: #FFFFFF;
-    --gray-line: #EDEDED;
-    --font-main: 'Sarabun', sans-serif;
-}
-
-/* --- Font Reset --- */
-html, body, button, input, select, textarea, a, p, h1, h2, h3, h4, h5, h6, span, div {
-    font-family: var(--font-main) !important;
-    color: var(--text);
-    letter-spacing: 0.2px;
-    line-height: 1.5;
-}
-
-/* --- Layout --- */
-body {
-    margin: 0;
-    background-color: var(--background);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-/* ------------------------------------
-   HEADER BAR
------------------------------------- */
+/* --- HEADER --- */
 .main-header {
-    background: var(--primary-orange);
-    padding: 14px 30px;
+    background: var(--primary-dark);
+    color: white;
+    height: 70px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: relative;
-    z-index: 10;
-}
-
-.header-logo-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+    padding: 0 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 .header-logo-img {
-    height: 40px;
+    height: 65px;
 }
 
-.header-nav {
-    display: flex;
-    gap: 50px;
-}
-
-.nav-item {
-    font-size: 1.05em;
-    font-weight: 500;
+.header-nav .nav-item {
     color: white;
-    transition: opacity 0.2s ease;
+    font-weight: 500;
+    margin-right: 35px;
     cursor: pointer;
+    transition: color 0.25s ease;
 }
-.nav-item:hover {
-    opacity: 0.8;
-}
-
-/* ------------------------------------
-   SIDEBAR
------------------------------------- */
-.dashboard-content {
-    display: flex;
-    flex: 1;
+.header-nav .nav-item:hover {
+    color: var(--secondary-light);
 }
 
+/* --- SIDEBAR --- */
 .sidebar {
-    width: 240px;
-    background-color: var(--primary-orange);
+    width: 260px;
+    background: var(--primary-main);
     display: flex;
     flex-direction: column;
-    padding-top: 15px;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    justify-content: space-between;
+    color: white;
+    height: calc(100vh - 70px);
+    padding: 20px 0;
 }
 
 .sidebar-btn {
     background: transparent;
     border: none;
     color: white;
-    font-size: 1.05em;
     text-align: left;
-    padding: 12px 20px;
+    padding: 14px 25px;
+    font-size: 1.05em;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.25s ease;
-    border-left: 5px solid transparent;
 }
-
 .sidebar-btn:hover {
-    background-color: var(--secondary-orange);
+    background: var(--primary-light);
+    color: var(--primary-dark);
 }
-
 .sidebar-btn.active {
-    background-color: var(--white);
-    color: var(--primary-orange);
-    font-weight: 600;
-    border-left: 5px solid var(--secondary-orange);
+    background: var(--accent-main);
+    color: white;
 }
 
-.menu-separator {
-    border: none;
-    border-top: 1px solid rgba(255,255,255,0.3);
-    margin: 10px 0;
+/* --- CONTENT --- */
+.dashboard-content {
+    display: flex;
+    background: var(--background-default);
 }
 
-/* ------------------------------------
-   MAIN CONTENT AREA
------------------------------------- */
 .main-content-wrapper {
     flex: 1;
-    background-color: var(--background);
     padding: 30px;
+    background: var(--background-default);
+}
+
+/* --- CARDS --- */
+.admin-content-box {
+    background: var(--background-paper);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
 }
 
 .summary-cards-container {
     display: flex;
-    flex-wrap: wrap;
     gap: 25px;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .summary-card {
     flex: 1;
-    min-width: 270px;
-    background-color: var(--white);
+    padding: 25px;
     border-radius: 12px;
-    border-top: 5px solid var(--primary-orange);
+    color: var(--text-primary);
+    background: white;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    padding: 24px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.25s ease;
 }
 .summary-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
 }
 
-.summary-card h3 {
-    font-size: 1.2em;
-    color: var(--primary-orange);
-    margin-bottom: 8px;
-    font-weight: 600;
+.summary-card.primary {
+    border-top: 4px solid var(--primary-main);
 }
-.summary-card p {
-    font-size: 2.3em;
-    font-weight: 700;
-    color: var(--primary-orange);
-    margin-bottom: 12px;
+.summary-card.secondary {
+    border-top: 4px solid var(--secondary-main);
 }
+.summary-card.tertiary {
+    border-top: 4px solid var(--accent-main);
+}
+
 .details-link {
-    color: var(--primary-orange);
-    font-weight: 600;
-    text-decoration: none;
+    color: var(--accent-main);
+    font-weight: 500;
     cursor: pointer;
 }
-.details-link:hover {
-    color: var(--secondary-orange);
-    text-decoration: underline;
-}
 
-/* ------------------------------------
-   BUTTONS
------------------------------------- */
-.action-button.primary-orange-bg {
-    background-color: var(--primary-orange);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 18px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-.action-button.primary-orange-bg:hover {
-    background-color: var(--secondary-orange);
-}
-
-/* ------------------------------------
-   TABLES
------------------------------------- */
+/* --- TABLE --- */
 .files-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-}
-.files-table th, .files-table td {
-    border: 1px solid #eee;
-    padding: 10px 14px;
-    text-align: left;
 }
 .files-table th {
-    background-color: var(--light-orange);
-    color: var(--primary-orange);
-    font-weight: 600;
+    background: var(--primary-main);
+    color: white;
+    padding: 12px;
+}
+.files-table td {
+    padding: 10px 12px;
 }
 .files-table tr:nth-child(even) {
-    background-color: #fffaf3;
+    background: var(--background-paper);
+}
+.files-table tr:hover {
+    background: var(--secondary-light);
 }
 
-/* ------------------------------------
-   FOOTER / TEXT ALIGN
------------------------------------- */
-.footer {
-    text-align: center;
-    padding: 15px;
-    font-size: 0.9em;
-    color: #777;
+.table-action-btn {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.25s;
+}
+.table-action-btn:hover {
+    opacity: 0.85;
+}
+.table-action-btn.download {
+    background: var(--secondary-main);
+    color: white;
+}
+.table-action-btn.delete {
+    background: var(--accent-main);
+    color: white;
 }

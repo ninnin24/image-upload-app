@@ -1,68 +1,59 @@
-import React from 'react';
-// สมมติว่า role ถูกดึงมาจาก localStorage หลัง Login
-const userRole = localStorage.getItem('user_role') || 'user'; 
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import '../styles/Home.css';
 
-const HomeDashboard = () => {
-    
-    // เมนูที่ Admin เท่านั้นที่เห็น
-    const adminMenu = [
-        { name: 'จัดการระบบ', link: '/admin/management' }
-    ];
+function HomeDashboard() {
+    const userRole = 'ผู้ดูแลระบบ';
 
-    // เมนูพื้นฐานสำหรับทุกคน
-    const baseMenu = [
-        { name: 'หน้าหลัก', link: '/home' },
-        { name: 'อัปโหลดไฟล์', link: '/upload' },
-        { name: 'รายการของฉัน', link: '/myfiles' }
-    ];
+    const [files, setFiles] = useState([]);
 
-    const allMenu = userRole === 'admin' ? [...baseMenu, ...adminMenu] : baseMenu;
+    useEffect(() => {
+        const storedFiles = JSON.parse(localStorage.getItem('uploaded_files') || '[]');
+        setFiles(storedFiles);
+    }, []);
+
+    const handleDelete = (index) => {
+        const newFiles = [...files];
+        newFiles.splice(index, 1);
+        localStorage.setItem('uploaded_files', JSON.stringify(newFiles));
+        setFiles(newFiles);
+    };
 
     return (
-        <div className="dashboard-layout">
-            {/* --- TOP TAB BAR (Header) --- */}
-            <header className="tab-bar">
-                {/* 1. โลโก้ HappySoft */}
-                <div className="logo-box">HappySoft</div> 
-
-                {/* 2. เมนู Tab Bar */}
-                <nav className="main-nav">
-                    {allMenu.map(item => (
-                        <div key={item.name} className="tab-item active-tab">
-                            {item.name}
-                        </div>
-                    ))}
+        <div className="home-container">
+            <header className="home-header">
+                <div className="home-logo">Happy Soft</div>
+                <nav className="home-nav">
+                    <Link to="/home" className="active">หน้าหลัก</Link>
+                    <Link to="/uploadimage">อัปโหลดไฟล์</Link>
+                    <Link to="/my-list">รายการของฉัน</Link>
+                    <Link to="/about">เกี่ยวกับ</Link>
                 </nav>
-
-                {/* 3. ไอคอนผู้ใช้ */}
-                <div className="user-profile-icon">
-                    <div className="role-tag">
-                       {userRole.toUpperCase()} 
-                    </div>
-                    <div className="profile-circle">
-                       👤 {/* หรือรูปคนจริง */}
-                    </div>
+                <div className="user-info">
+                    <span className="user-role-tag">ADMIN</span>
+                    <span className="user-icon">👤</span>
                 </div>
             </header>
 
-            {/* --- MAIN CONTENT AREA --- */}
-            <main className="content-area">
-                <div className="hero-section">
-                    <h2>อัปโหลดรูปภาพกิจกรรม</h2>
-                    <button className="upload-button-lg">
-                        🚀 คลิกเพื่ออัปโหลด
-                    </button>
-                    <p className="role-info">สิทธิ์การใช้งานปัจจุบัน: {userRole === 'admin' ? 'ผู้ดูแลระบบ' : 'บุคคลทั่วไป'}</p>
-                </div>
+            <main className="home-main">
+                <h2>กิจกรรมและไฟล์ล่าสุด</h2>
 
-                <h3>กิจกรรมและไฟล์ล่าสุด</h3>
-                <div className="file-grid">
-                    {/* Placeholder สำหรับรูปภาพกิจกรรม/ไฟล์ล่าสุด */}
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                        <div key={i} className="file-card">
-                            [รูปภาพกิจกรรม {i}]
-                        </div>
-                    ))}
+                <div className="file-list">
+                    {files.length === 0 ? (
+                        <p className="no-files">ยังไม่มีไฟล์อัปโหลด</p>
+                    ) : (
+                        files.map((file, index) => (
+                            <div key={index} className="file-item">
+                                {file.name} - <small>{file.uploadedAt}</small>
+                                <button
+                                    className="delete-button"
+                                    onClick={() => handleDelete(index)}
+                                >
+                                    🗑️ ลบ
+                                </button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </main>
         </div>
