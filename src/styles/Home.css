@@ -1,86 +1,128 @@
-/* ---------------- General Reset ---------------- */
-body {
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+
+:root {
+    --primary-dark: #005377;
+    --primary-main: #00AEEF;
+    --primary-light: #87CEEB;
+    --secondary-dark: #2CA3A3;
+    --secondary-main: #40E0D0;
+    --secondary-light: #AEEEEE;
+    --accent-main: #FF7F50;
+    --background-default: #E0F7FA;
+    --background-paper: #AEEEEE;
+    --text-primary: #003F5C;
+    --text-secondary: #007F91;
+    --text-accent: #FF7F50;
+    --font-family: 'Sarabun', sans-serif;
+}
+
+body, html {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f6fa;
-    color: #333;
+    font-family: var(--font-family);
+    background-color: var(--background-default);
+    color: var(--text-primary);
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-/* ---------------- Header ---------------- */
+/* Header */
 .home-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #00a8ff;
-    padding: 10px 20px;
+    background-color: var(--primary-dark);
+    color: white;
+    padding: 20px 60px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.home-logo-text {
+    font-family: var(--font-family);
+    font-size: 1.6em; 
+    font-weight: 700;
     color: white;
 }
 
-.home-logo {
-    font-weight: bold;
-    font-size: 20px;
+.home-header nav a {
+    color: white;
+    margin: 0 15px;
+    font-weight: 500;
+    text-decoration: none;
 }
 
-.home-nav a {
-    margin-right: 15px;
-    padding: 5px 10px;
+.home-header nav a:hover, .home-header nav a.active {
+    color: var(--secondary-light);
+    text-decoration: underline;
+}
+
+.user-info span {
+    margin-left: 10px;
+    background-color: var(--accent-main);
+    padding: 3px 8px;
     border-radius: 5px;
-    transition: background-color 0.2s;
+    font-size: 0.9em;
 }
 
-.home-nav a:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.home-nav .active {
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
-.user-info {
-    font-size: 16px;
-}
-
-.user-role-tag {
-    margin-right: 8px;
-    background-color: #ff4757;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #005377, #00AEEF, #87CEEB);
     color: white;
-}
-
-/* ---------------- Main Content ---------------- */
-.home-main {
-    padding: 20px;
-}
-
-/* ---------------- File List ---------------- */
-.file-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.file-item {
-    background-color: white;
-    padding: 10px;
-    border-radius: 10px;
     text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 80px 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.file-item small {
-    color: gray;
-    margin-top: 5px;
+.hero h1 {
+    font-size: 2.8em;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    font-size: 1.2em;
+    opacity: 0.95;
+}
+
+/* Container */
+.container {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.container h2 {
+    color: var(--primary-dark);
+    border-left: 6px solid var(--accent-main);
+    padding-left: 15px;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* Timeline / File List */
+.timeline {
+    background: var(--background-paper);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--secondary-main);
+}
+
+.timeline-item {
+    color: var(--text-secondary);
+}
+
+.delete-button {
+    margin-top: 10px;
+    padding: 4px 8px;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s;
+}
+
+.delete-button:hover {
+    background-color: #ff6b81;
 }
 
 .no-files {
@@ -88,60 +130,20 @@ a {
     color: gray;
 }
 
-/* ---------------- Upload Page ---------------- */
-.upload-container {
-    padding: 20px;
-    max-width: 400px;
-    margin: 20px auto;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.upload-container input[type="file"] {
-    margin: 10px 0;
-}
-
-.upload-container button {
-    padding: 8px 15px;
-    background-color: #00a8ff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.upload-container button:hover {
-    background-color: #0097e6;
-}
-
-/* ---------------- Delete Button ---------------- */
-.delete-button {
-    margin-top: 8px;
-    padding: 2px 6px;
-    background-color: #ff4757;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.2s;
-}
-
-.delete-button:hover {
-    background-color: #ff6b81;
-}
-
-/* ---------------- Responsive ---------------- */
+/* Responsive */
 @media (max-width: 600px) {
-    .home-nav a {
-        margin-right: 10px;
-        font-size: 14px;
+    .home-header {
+        flex-direction: column;
+        text-align: center;
     }
-
-    .file-item {
-        font-size: 14px;
+    .home-header nav a {
+        display: block;
+        margin: 5px 0;
+    }
+    .hero h1 {
+        font-size: 2em;
+    }
+    .container {
+        margin: 40px 10px;
     }
 }
