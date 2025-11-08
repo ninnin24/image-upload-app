@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/AboutPage.css'; // 🎯 Path นี้ถูกต้องแล้ว
+import '../styles/AboutPage.css'; // 🎯 Path ถูกต้อง
 
 function AboutPage() {
     const navigate = useNavigate(); 
@@ -9,39 +9,38 @@ function AboutPage() {
     const userRole = localStorage.getItem('user_role') || 'user';
     const userName = localStorage.getItem('user_name') || 'ผู้เยี่ยมชม';
     
-    // กำหนด Home Link ตาม Role
-    const homePath = userRole === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    // Home Path: ไปหน้า HomeDashboard (/home) สำหรับทุก Role
+    const homePath = '/home';
     
-   
     return (
         <div className="about-page-wrapper">
+            {/* Header */}
             <header className="about-header">
-                {/* 🎯 เชื่อมโลโก้กลับหน้า Home ของ Admin/User */}
-                <div className="logo" onClick={() => navigate(homePath)} style={{cursor: 'pointer'}}>
+                {/* โลโก้ */}
+                <div className="logo" onClick={() => navigate(homePath)} style={{ cursor: 'pointer' }}>
                     Happy Soft
                 </div>
                 
                 <nav>
-                    {/* 🎯 เมนูนำทาง: หน้าแรก */}
-                    <a href="#" onClick={() => navigate(homePath)}>หน้าแรก</a>
-                    <a href="#">บริการ</a>
+                    {/* เมนูนำทาง */}
+                    <a href="#" onClick={() => navigate(homePath)}>หน้าหลัก</a>
                     <a href="#" className="active">เกี่ยวกับเรา</a>
-                    <a href="#">ติดต่อเรา</a>
                 </nav>
                 
                 <div className="user-profile-info">
-                     {/* แสดงข้อมูลผู้ใช้ที่ล็อกอินอยู่ */}
+                     {/* แสดงข้อมูลผู้ใช้ */}
                      {userRole !== 'user' && <span style={{marginRight: '15px'}}>{userRole.toUpperCase()}</span>}
                      {userName}
                 </div>
-
             </header>
 
+            {/* Hero Section */}
             <section className="hero">
                 <h1>เกี่ยวกับ Happy Soft</h1>
                 <p>ผู้นำด้านนวัตกรรมเทคโนโลยีที่มุ่งมั่นพัฒนาโซลูชันเพื่อขับเคลื่อนธุรกิจไทย</p>
             </section>
 
+            {/* Content Section */}
             <div className="container">
                 <h2>วิสัยทัศน์</h2>
                 <p>เป็นผู้นำในการสร้างสรรค์โซลูชันเทคโนโลยีที่ชาญฉลาดและสร้างผลกระทบเชิงบวกที่ยั่งยืนให้กับธุรกิจและสังคมในประเทศไทยและภูมิภาค</p>
@@ -60,14 +59,15 @@ function AboutPage() {
 
                 <h2>เส้นทางของเรา</h2>
                 <div className="timeline">
-                    <div class="timeline-item"><strong>2023:</strong> ก่อตั้ง Happy Soft และเริ่มพัฒนาโซลูชันซอฟต์แวร์</div>
-                    <div class="timeline-item"><strong>ปลายปี 2023:</strong> เปิดตัวระบบสมาชิกออนไลน์</div>
-                    <div class="timeline-item"><strong>2024:</strong> ขยายทีมและบริการ Smart Solution</div>
-                    <div class="timeline-item"><strong>ปลายปี 2024:</strong> เปิดบริการฝึกอบรมเฉพาะทาง</div>
-                    <div class="timeline-item"><strong>2025:</strong> เสริมทัพบริการการตลาดออนไลน์ครบวงจร</div>
+                    <div className="timeline-item"><strong>2023:</strong> ก่อตั้ง Happy Soft และเริ่มพัฒนาโซลูชันซอฟต์แวร์</div>
+                    <div className="timeline-item"><strong>ปลายปี 2023:</strong> เปิดตัวระบบสมาชิกออนไลน์</div>
+                    <div className="timeline-item"><strong>2024:</strong> ขยายทีมและบริการ Smart Solution</div>
+                    <div className="timeline-item"><strong>ปลายปี 2024:</strong> เปิดบริการฝึกอบรมเฉพาะทาง</div>
+                    <div className="timeline-item"><strong>2025:</strong> เสริมทัพบริการการตลาดออนไลน์ครบวงจร</div>
                 </div>
             </div>
 
+            {/* Footer */}
             <footer>
                 ร่วมเป็นส่วนหนึ่งของการเดินทางสู่ความสำเร็จกับ Happy Soft
             </footer>
