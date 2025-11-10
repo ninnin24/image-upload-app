@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  // ✅ เพิ่ม useEffect
 import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
 
@@ -13,6 +13,19 @@ function LoginPage() {
     const [isRegistering, setIsRegistering] = useState(false);
 
     const navigate = useNavigate();
+
+    // ✅ ตรวจสอบ token ทันทีเมื่อเปิดหน้า (จำสถานะล็อกอินไว้)
+    useEffect(() => {
+        const token = localStorage.getItem('auth_token');
+        const role = localStorage.getItem('user_role');
+        if (token && role) {
+            if (role === 'admin') {
+                navigate('/admin/dashboard', { replace: true });
+            } else {
+                navigate('/home', { replace: true });
+            }
+        }
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -38,11 +51,11 @@ function LoginPage() {
                 localStorage.setItem('auth_token', token);
                 localStorage.setItem('user_role', role);
 
-                // Role-Based Routing
+                // ✅ Role-Based Routing
                 if (role === 'admin') {
                     navigate('/admin/dashboard', { replace: true });
                 } else {
-                    navigate('/home', { replace: true });
+                    navigate('/user/dashboard', { replace: true });
                 }
             } else {
                 setError(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
