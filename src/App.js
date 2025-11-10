@@ -11,17 +11,18 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 
 // Components
-// ✅ แก้ไข: เพิ่มการนำเข้า Header กลับเข้ามา
-import Header from './components/Header.jsx'; 
+import Header from './components/Header.jsx';
 
-// Protected Route: Component นี้ใช้ได้ดีแล้ว
+// Protected Route
 const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
-    // เพิ่มการตรวจสอบ role
     if (!user || !user.role || !allowedRoles.includes(user.role)) {
         return <Navigate to="/login" replace />;
     }
     return children;
 };
+
+// Backend URL
+const API_URL = 'http://172.18.20.45:8080';
 
 function App() {
     const [user, setUser] = useState(undefined);
@@ -29,13 +30,13 @@ function App() {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await axios.get('http://172.18.20.45:8080/auth/validate', {
+                const res = await axios.get(`${API_URL}/auth/validate`, {
                     withCredentials: true,
                 });
 
                 if (res.data && res.data.user) {
                     setUser(res.data.user);
-                    localStorage.setItem('user_role', res.data.user.role); 
+                    localStorage.setItem('user_role', res.data.user.role);
                 } else {
                     const savedRole = localStorage.getItem('user_role');
                     setUser(savedRole ? { role: savedRole } : null);
@@ -52,11 +53,7 @@ function App() {
 
     const handleLogout = async () => {
         try {
-            await axios.post(
-                'http://172.18.20.45:8080/auth/logout',
-                {},
-                { withCredentials: true }
-            );
+            await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
             console.log('Logout success');
         } catch (err) {
             console.warn('Logout failed (ignored):', err.message);
@@ -64,6 +61,8 @@ function App() {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_role');
             setUser(null);
+            // รีเฟรชเพื่อเคลียร์สถานะ
+            window.location.href = '/login';
         }
     };
 
@@ -74,20 +73,17 @@ function App() {
             </div>
         );
     }
-    
+
     return (
         <Router>
-            {/* บรรทัดนี้ (เดิมคือ 85) จะใช้งานได้แล้วหลังจาก import Header */}
-            <Header user={user} onLogout={handleLogout} /> 
+            <Header user={user} onLogout={handleLogout} />
 
             <Routes>
-                {/* Route: Login/Register (Header Component จะซ่อนตัวเองเมื่อ path ตรงกัน) */}
+                {/* Login / Register */}
                 <Route path="/login" element={<LoginPage setUser={setUser} />} />
-                
-                {/* เพิ่ม Route สำหรับ Register ให้ LoginPage จัดการ */}
-                <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} /> 
-                
-                {/* Default route / redirect ตาม role */}
+                <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} />
+
+                {/* Default Route */}
                 <Route
                     path="/"
                     element={
@@ -103,7 +99,7 @@ function App() {
                     }
                 />
 
-                {/* สำหรับ backward compatibility: /home redirect ตาม role */}
+                {/* For backward compatibility */}
                 <Route
                     path="/home"
                     element={
@@ -119,7 +115,7 @@ function App() {
                     }
                 />
 
-                {/* Protected Routes: User */}
+                {/* User Routes */}
                 <Route
                     path="/upload"
                     element={
@@ -128,7 +124,6 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route
                     path="/my-list"
                     element={
@@ -137,10 +132,9 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                
                 <Route path="/about" element={<AboutPage />} />
 
-                {/* Protected Routes: Admin */}
+                {/* Admin Routes */}
                 <Route
                     path="/admin/dashboard"
                     element={
@@ -150,7 +144,7 @@ function App() {
                     }
                 />
 
-                {/* Protected Routes: User Dashboard */}
+                {/* User Dashboard */}
                 <Route
                     path="/user/dashboard"
                     element={

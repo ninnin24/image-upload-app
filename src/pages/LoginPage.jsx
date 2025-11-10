@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';  // ✅ เพิ่ม useEffect
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/LoginPage.css';
-
 import HappySoftLogo from '../assets/fileflowz2.png';
 
+// ใช้ URL เดียวกันกับ App.js
 const API_URL = 'http://172.18.20.45:8080';
 
 function LoginPage() {
@@ -14,7 +15,7 @@ function LoginPage() {
 
     const navigate = useNavigate();
 
-    // ✅ ตรวจสอบ token ทันทีเมื่อเปิดหน้า (จำสถานะล็อกอินไว้)
+    // ตรวจสอบ token ทันทีเมื่อเปิดหน้า
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
         const role = localStorage.getItem('user_role');
@@ -22,11 +23,12 @@ function LoginPage() {
             if (role === 'admin') {
                 navigate('/admin/dashboard', { replace: true });
             } else {
-                navigate('/home', { replace: true });
+                navigate('/user/dashboard', { replace: true });
             }
         }
     }, [navigate]);
 
+    // เข้าสู่ระบบ
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -37,34 +39,39 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-                credentials: 'include', // ส่ง cookie
-            });
+            const response = await axios.post(
+                `${API_URL}/login`,
+                { username, password },
+                { withCredentials: true }
+            );
 
-            const data = await response.json();
+            const { role } = response.data;
 
-            if (response.ok) {
-                const { token, role } = data;
-                localStorage.setItem('auth_token', token);
-                localStorage.setItem('user_role', role);
+            // เก็บ role และ token ลง localStorage
+            localStorage.setItem('user_role', role);
+            localStorage.setItem('auth_token', 'true'); // ใช้เป็น flag ว่ามีการล็อกอินแล้ว
 
-                // ✅ Role-Based Routing
-                if (role === 'admin') {
-                    navigate('/admin/dashboard', { replace: true });
-                } else {
-                    navigate('/user/dashboard', { replace: true });
-                }
+            // Role-Based Routing
+            if (role === 'admin') {
+                navigate('/admin/dashboard', { replace: true });
             } else {
-                setError(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                navigate('/user/dashboard', { replace: true });
             }
+
+            // รีเฟรชเพื่อให้ App.js โหลดข้อมูล user ใหม่
+            window.location.reload();
         } catch (err) {
-            setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            if (err.response) {
+                setError(err.response.data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            } else if (err.request) {
+                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            } else {
+                setError('เกิดข้อผิดพลาดบางอย่าง');
+            }
         }
     };
 
+    // ลงทะเบียน
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
@@ -75,22 +82,21 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            await axios.post(`${API_URL}/register`, {
+                username,
+                password,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
-                setIsRegistering(false);
-            } else {
-                setError(data.message || 'การลงทะเบียนล้มเหลว');
-            }
+            alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
+            setIsRegistering(false);
+            setUsername('');
+            setPassword('');
         } catch (err) {
-            setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            if (err.response) {
+                setError(err.response.data.message || 'การลงทะเบียนล้มเหลว (อาจมีชื่อผู้ใช้นี้แล้ว)');
+            } else {
+                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            }
         }
     };
 
@@ -108,7 +114,7 @@ function LoginPage() {
                             type="text"
                             id="username"
                             value={username}
-                            onChange={e => setUsername(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
@@ -119,7 +125,7 @@ function LoginPage() {
                             type="password"
                             id="password"
                             value={password}
-                            onChange={e => setPassword(e.target.value)}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
