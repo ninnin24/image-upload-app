@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
@@ -9,7 +9,7 @@ function HomeDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // ตรวจสอบ cookie เพื่อดึงข้อมูล user
+  // ✅ ดึงข้อมูล user จาก cookie
   useEffect(() => {
     axios.get('http://172.18.20.45:8080/auth/validate', { withCredentials: true })
       .then(res => setUser(res.data))
@@ -17,22 +17,25 @@ function HomeDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  // โหลดไฟล์ตามสิทธิ์
-  const fetchFiles = async () => {
+  // ✅ ใช้ useCallback เพื่อป้องกัน ESLint warning
+  const fetchFiles = useCallback(async () => {
+    if (!user) return; // ป้องกันเรียกก่อน user ถูกโหลด
+
     try {
       let url = '';
-      if (user?.role === 'ผู้ดูแลระบบ') url = 'http://172.18.20.45:8080/admin/files';
-      else url = 'http://172.18.20.45:8080/user/files'; // user ได้ไฟล์ของตนเอง
+      if (user.role === 'ผู้ดูแลระบบ') url = 'http://172.18.20.45:8080/admin/files';
+      else url = 'http://172.18.20.45:8080/user/files';
       const res = await axios.get(url, { withCredentials: true });
       setFiles(res.data);
     } catch {
       setFiles([]);
     }
-  };
+  }, [user]); // ✅ ระบุ dependency เป็น user เท่านั้น
 
+  // ✅ โหลดไฟล์หลังจาก user ถูกโหลด
   useEffect(() => {
     if (user) fetchFiles();
-  }, [user]);
+  }, [user, fetchFiles]);
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
@@ -40,7 +43,9 @@ function HomeDashboard() {
     navigate('/login', { replace: true });
   };
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>กำลังโหลดข้อมูล...</div>;
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: '50px' }}>กำลังโหลดข้อมูล...</div>;
+  }
 
   return (
     <div className="home-container">

@@ -109,7 +109,8 @@ body {
 /* --- MAIN CONTENT --- */
 .main-content-wrapper {
     flex: 1;
-    background: var(--background-paper);
+    /* ⭐️ แก้ไข: เปลี่ยนเป็นสีขาว */
+    background: #ffffff; 
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
@@ -158,6 +159,9 @@ body {
     border-collapse: collapse;
     border-radius: 8px;
     overflow: hidden;
+    /* ⭐️ แก้ไข: เพิ่มพื้นหลังสีขาวและเงา */
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .files-table th {
@@ -169,14 +173,22 @@ body {
 
 .files-table td {
     padding: 12px;
+    /* ⭐️ แก้ไข: เปลี่ยนเส้นขอบเป็นสีเทาอ่อน */
+    border-bottom: 1px solid #e9ecef;
 }
 
 .files-table tr:nth-child(even) {
-    background: var(--background-default);
+    /* ⭐️ แก้ไข: ใช้สีฟ้าที่จางที่สุด (background-paper) */
+    background: var(--background-paper);
 }
 
 .files-table tr:hover {
     background: var(--secondary-light);
+}
+
+/* ⭐️ เพิ่ม: ทำให้แถวสุดท้ายไม่มีเส้นขอบล่าง */
+.files-table tr:last-child td {
+    border-bottom: none;
 }
 
 .table-action-btn {
@@ -217,4 +229,72 @@ body {
     .summary-cards-container {
         flex-direction: column;
     }
+}
+
+/* ==============================================
+  ⭐️ ส่วนที่เพิ่มเข้ามา: USER MANAGEMENT STYLES ⭐️
+==============================================
+*/
+
+/* --- ส่วนหัวของหน้า (ชื่อหน้า + ปุ่มเพิ่ม) --- */
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-page-title h3 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--text-primary); 
+  font-weight: 600;
+}
+
+.admin-page-title .icon {
+  color: var(--text-primary); 
+}
+
+
+/* --- ปุ่ม "เพิ่มผู้ใช้ใหม่" (ปุ่มทั่วไป) --- */
+.btn {
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.95em;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-accent {
+  background-color: var(--accent-main); 
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+
+/* --- Action Links ในตาราง --- */
+.action-cell {
+  white-space: nowrap;
+}
+
+.action-divider {
+  margin: 0 8px;
+  color: var(--text-primary);
+  opacity: 0.4;
+}
+
+.table-action-btn.reset {
+  background: var(--secondary-main); 
+  color: white;
 }

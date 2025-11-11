@@ -10,8 +10,15 @@ const DashboardSummary = () => {
 
   useEffect(() => {
     axios.get('http://172.18.20.45:8080/admin/summary', { withCredentials: true })
-      .then(res => setSummary(res.data))
-      .catch(err => console.error(err));
+      .then(res => {
+      const data = res.data;
+      setSummary({
+        companies: data.total_companies,
+        users: data.total_users,
+        files: data.total_files,
+      });
+    })
+    .catch(err => console.error(err));
 
     axios.get('http://172.18.20.45:8080/admin/files', { withCredentials: true })
       .then(res => setRecentFiles(res.data.slice(0,5)))
@@ -48,7 +55,6 @@ const DashboardSummary = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* 🗂️ ไฟล์ล่าสุด */}
       <div className="admin-content-box">
         <h3><VscFile size={20} style={{ marginRight: '8px' }} />ไฟล์ล่าสุด</h3>
         {recentFiles.length === 0 ? (

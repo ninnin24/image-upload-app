@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react"; // ⭐️ 1. ลบ useEffect
+// ⭐️ 2. ลบ axios
 
-// 🎨 นำเข้าไอคอนใหม่ทั้งหมด
+// 🎨 นำเข้าไอคอน
 import { CgAlignBottom, CgBox } from "react-icons/cg";
-import { VscAccount } from "react-icons/vsc";
-import { VscOutput } from "react-icons/vsc";
+import { VscAccount, VscOutput } from "react-icons/vsc";
+// ⭐️ 3. ลบ IoIosLogOut (ปุ่ม Logout อยู่ใน Header หลัก)
 
 import DashboardSummary from "./DashboardSummary.jsx";
 import CompanyManagement from "./CompanyManagement.jsx";
@@ -15,13 +15,6 @@ import "../styles/Dashboard.css";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("summary");
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_role");
-    navigate("/login", { replace: true });
-  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -39,63 +32,42 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="dashboard-layout">
-      {/* Header */}
-      <header className="main-header">
-        <div className="dashboard-logo" onClick={() => setActiveTab("summary")}>
-          FileFlowz Admin
-        </div>
-        <nav className="header-nav">
-          <span onClick={() => navigate("/about")}>เกี่ยวกับเรา</span>
-        </nav>
-      </header>
+    <div className="dashboard-content">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <button
+          className={`sidebar-btn ${activeTab === "summary" ? "active" : ""}`}
+          onClick={() => setActiveTab("summary")}
+        >
+          <CgAlignBottom size={22} className="icon" />
+          แดชบอร์ด
+        </button>
 
-      {/* Dashboard Content */}
-      <div className="dashboard-content">
-        {/* Sidebar */}
-        <div className="sidebar">
-          <button
-            className={`sidebar-btn ${activeTab === "summary" ? "active" : ""}`}
-            onClick={() => setActiveTab("summary")}
-          >
-            <CgAlignBottom size={22} className="icon" />
-            แดชบอร์ด
-          </button>
+        <button
+          className={`sidebar-btn ${activeTab === "companies" ? "active" : ""}`}
+          onClick={() => setActiveTab("companies")}
+        >
+          <CgBox size={22} className="icon" />
+          จัดการบริษัท
+        </button>
 
-          <button
-            className={`sidebar-btn ${activeTab === "companies" ? "active" : ""}`}
-            onClick={() => setActiveTab("companies")}
-          >
-            <CgBox size={22} className="icon" />
-            จัดการบริษัท
-          </button>
+        <button
+          className={`sidebar-btn ${activeTab === "users" ? "active" : ""}`}
+          onClick={() => setActiveTab("users")}
+        >
+           <VscAccount size={22} className="icon" />
+          จัดการผู้ใช้
+        </button>
 
-          <button
-            className={`sidebar-btn ${activeTab === "users" ? "active" : ""}`}
-            onClick={() => setActiveTab("users")}
-          >
-             <VscAccount size={22} className="icon" />
-            จัดการผู้ใช้
-          </button>
-
-          <button
-            className={`sidebar-btn ${activeTab === "reports" ? "active" : ""}`}
-            onClick={() => setActiveTab("reports")}
-          >
-            <VscOutput size={22} className="icon" />
-            รายงานและตรวจสอบไฟล์
-          </button>
-
-          <div className="sidebar-footer">
-            <button className="sidebar-btn logout" onClick={handleLogout}>
-              ออกจากระบบ
-            </button>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="main-content-wrapper">{renderContent()}</div>
+        <button
+          className={`sidebar-btn ${activeTab === "reports" ? "active" : ""}`}
+          onClick={() => setActiveTab("reports")}
+        >
+          <VscOutput size={22} className="icon" />
+          รายงานและตรวจสอบไฟล์
+        </button>
       </div>
+      <div className="main-content-wrapper">{renderContent()}</div>
     </div>
   );
 }
