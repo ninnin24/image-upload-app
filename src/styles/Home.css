@@ -36,6 +36,7 @@
 .hero {
     text-align: center;
     padding: 60px 20px;
+    margin: 70px auto;
     background: var(--gradient-flow);
     color: white;
 }
