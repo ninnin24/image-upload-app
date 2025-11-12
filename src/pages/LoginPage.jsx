@@ -43,10 +43,6 @@ function LoginPage({ setUser, isRegister = false }) {
 
             if (response.ok) {
                 const { role } = data;
-                localStorage.setItem('user_role', role);
-
-                // ⭐️ 7. (สำคัญ!) อัปเดต State หลักใน App.js
-                // เราต้องส่ง 'data' ทั้งก้อน (ที่มี username, role)
                 setUser(data); 
 
                 if (role === 'admin') {
