@@ -1,31 +1,25 @@
-import React, { useState, useEffect } from 'react';  // ✅ เพิ่ม useEffect
+import React, { useState } from 'react'; // ⭐️ 1. ลบ useEffect ออก
 import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
-
 import HappySoftLogo from '../assets/fileflowz2.png';
 
-const API_URL = 'http://172.18.20.45:8080';
+// ⭐️ 2. ลบ API_URL ทิ้ง
 
-function LoginPage() {
+// ⭐️ 3. รับ 'setUser' มาจาก Props
+function LoginPage({ setUser, isRegister = false }) { 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isRegistering, setIsRegistering] = useState(false);
-
+    // ⭐️ 4. แก้ไข isRegistering 
+    const [isRegistering, setIsRegistering] = useState(isRegister);
     const navigate = useNavigate();
 
-    // ✅ ตรวจสอบ token ทันทีเมื่อเปิดหน้า (จำสถานะล็อกอินไว้)
+    // ⭐️ 5. ลบ USEEFFECT ที่ตรวจสอบ LOCALSTORAGE ทิ้งไปทั้งหมด
+    /*
     useEffect(() => {
-        const token = localStorage.getItem('auth_token');
-        const role = localStorage.getItem('user_role');
-        if (token && role) {
-            if (role === 'admin') {
-                navigate('/admin/dashboard', { replace: true });
-            } else {
-                navigate('/home', { replace: true });
-            }
-        }
+        // ... (ลบบล็อกนี้ทิ้ง) ...
     }, [navigate]);
+    */
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -37,21 +31,24 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/login`, {
+            // ⭐️ 6. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
+            const response = await fetch(`/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
-                credentials: 'include', // ส่ง cookie
+                credentials: 'include',
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                const { token, role } = data;
-                localStorage.setItem('auth_token', token);
+                const { role } = data;
                 localStorage.setItem('user_role', role);
 
-                // ✅ Role-Based Routing
+                // ⭐️ 7. (สำคัญ!) อัปเดต State หลักใน App.js
+                // เราต้องส่ง 'data' ทั้งก้อน (ที่มี username, role)
+                setUser(data); 
+
                 if (role === 'admin') {
                     navigate('/admin/dashboard', { replace: true });
                 } else {
@@ -75,7 +72,8 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/register`, {
+            // ⭐️ 8. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
+            const response = await fetch(`/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
@@ -85,7 +83,7 @@ function LoginPage() {
 
             if (response.ok) {
                 alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
-                setIsRegistering(false);
+                setIsRegistering(false); // ⭐️ 9. กลับไปหน้า Login
             } else {
                 setError(data.message || 'การลงทะเบียนล้มเหลว');
             }

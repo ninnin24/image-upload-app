@@ -67,3 +67,23 @@
   outline: none;
   box-shadow: 0 0 4px rgba(255, 102, 0, 0.3);
 }
+.search-bar {
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  width: 100%; /* ⭐️ ทำให้เต็มความกว้าง */
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95em;
+  font-family: 'Segoe UI', sans-serif;
+  transition: all 0.2s ease-in-out;
+}
+
+/* ⭐️ เพิ่ม UI Feedback ตอนคลิก */
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--primary-main); /* ⭐️ ใช้สีจากธีม */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); /* ⭐️ ใช้สีจากธีม */
+}

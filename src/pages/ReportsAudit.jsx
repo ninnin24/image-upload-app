@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../styles/ReportsAudit.css';
+import '../styles/theme.css';
+import '../styles/ReportsAudit.css'; 
+import { VscOutput } from "react-icons/vsc";
+import { IoReturnUpBack } from "react-icons/io5";
 
 function ReportsAudit() {
   const [reportData, setReportData] = useState([]);
   const [userLogs, setUserLogs] = useState([]);
   const [searchReport, setSearchReport] = useState('');
   const [searchLogs, setSearchLogs] = useState('');
+  
+  const [selectedGroup, setSelectedGroup] = useState(null); 
 
   useEffect(() => {
     fetchReports();
@@ -15,7 +20,7 @@ function ReportsAudit() {
 
   const fetchReports = async () => {
     try {
-      const res = await axios.get('http://172.18.20.45:8080/admin/report-summary', {
+      const res = await axios.get('/admin/report-summary', {
         withCredentials: true,
       });
       setReportData(res.data);
@@ -26,7 +31,7 @@ function ReportsAudit() {
 
   const fetchUserLogs = async () => {
     try {
-      const res = await axios.get('http://172.18.20.45:8080/admin/user-logs', {
+      const res = await axios.get('/admin/user-logs', {
         withCredentials: true,
       });
       setUserLogs(res.data);
@@ -35,116 +40,162 @@ function ReportsAudit() {
     }
   };
 
+  // ⭐️ 1. (แก้ไข) แก้ไขฟังก์ชันนี้
   const exportToExcel = () => {
-    window.location.href = 'http://172.18.20.45:8080/admin/export/excel';
+    // ✅ ถูก: บอกเบราว์เซอร์ให้วิ่งไปที่ Backend (port 8080) โดยตรง
+    window.location.href = 'http://172.18.20.45:8080/admin/export/excel';
   };
 
+  // ⭐️ 2. (แก้ไข) ฟังก์ชันนี้ยังไม่พร้อมใช้งาน
   const exportToPDF = () => {
-    window.location.href = 'http://172.18.20.45:8080/admin/export/pdf';
+    alert('ฟังก์ชัน Export to PDF ยังซับซ้อนและยังไม่พร้อมใช้งานครับ');
   };
 
-  // ✅ ฟิลเตอร์ข้อมูลรายงาน
+  // ... (ส่วนฟิลเตอร์ข้อมูล เหมือนเดิม) ...
   const filteredReports = reportData.filter(item =>
-    item.company_name.toLowerCase().includes(searchReport.toLowerCase())
+    item.group_name.toLowerCase().includes(searchReport.toLowerCase())
   );
-
-  // ✅ ฟิลเตอร์ข้อมูล log
-  const filteredLogs = userLogs.filter(
-    log =>
+  const filteredLogs = userLogs
+    .filter(log => {
+      if (!selectedGroup) return false; 
+      if (selectedGroup.type === 'Company') {
+        return log.company_name === selectedGroup.name;
+      }
+      if (selectedGroup.type === 'User') {
+        return log.username === selectedGroup.name && log.company_name === 'N/A';
+      }
+      return false;
+    })
+    .filter(log =>
       log.username.toLowerCase().includes(searchLogs.toLowerCase()) ||
       log.filename.toLowerCase().includes(searchLogs.toLowerCase())
-  );
+    );
 
   return (
-    <div className="reports-audit">
-      <h2>📊 รายงานและการตรวจสอบไฟล์</h2>
-
-      {/* 🔍 ช่องค้นหารายงาน */}
-      <section>
-        <h3>รายงานสรุปจำนวนไฟล์ต่อบริษัท</h3>
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="🔍 ค้นหาชื่อบริษัท..."
-            value={searchReport}
-            onChange={e => setSearchReport(e.target.value)}
-          />
+    <div className="main-content-wrapper">
+      <div className="admin-page-header">
+        
+        {/* ⭐️ 3. (แก้ไข) ผมย้ายปุ่ม Export มาไว้ตรงนี้
+            เพื่อให้ตรงกับโค้ด JSX ที่คุณส่งมา
+        */}
+        <div className="admin-page-title">
+          <VscOutput size={22} className="icon" /> 
+          <h3>รายงานและการตรวจสอบไฟล์</h3>
+        </div>
+        <div className="export-buttons">
+          <button className="btn btn-secondary" onClick={exportToExcel}>ดาวน์โหลด Excel</button>
+          <button className="btn btn-accent" onClick={exportToPDF}>ดาวน์โหลด PDF</button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>ชื่อบริษัท</th>
-              <th>จำนวนไฟล์ทั้งหมด</th>
-              <th>อัปโหลดล่าสุด</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredReports.length > 0 ? (
-              filteredReports.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.company_name}</td>
-                  <td>{item.total_files}</td>
-                  <td>{new Date(item.last_upload).toLocaleDateString()}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" style={{ textAlign: 'center', color: '#999' }}>
-                  ไม่พบข้อมูลบริษัท
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-
-      {/* 🔍 ช่องค้นหา Log */}
-      <section>
-        <h3>📁 ประวัติการกระทำของผู้ใช้</h3>
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="🔍 ค้นหาชื่อผู้ใช้หรือชื่อไฟล์..."
-            value={searchLogs}
-            onChange={e => setSearchLogs(e.target.value)}
-          />
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>ชื่อผู้ใช้</th>
-              <th>การกระทำ</th>
-              <th>ชื่อไฟล์</th>
-              <th>วันที่</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLogs.length > 0 ? (
-              filteredLogs.map((log, index) => (
-                <tr key={index}>
-                  <td>{log.username}</td>
-                  <td>{log.action}</td>
-                  <td>{log.filename}</td>
-                  <td>{new Date(log.timestamp).toLocaleString()}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', color: '#999' }}>
-                  ไม่พบข้อมูลการกระทำของผู้ใช้
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-
-      <div className="export-buttons">
-        <button onClick={exportToExcel}>📘 ดาวน์โหลด Excel</button>
-        <button onClick={exportToPDF}>📕 ดาวน์โหลด PDF</button>
       </div>
+
+      {/* 🔍 ส่วนที่ 1: รายงานสรุป (ตารางบน) */}
+      <section className="report-section">
+        <h3>
+          {selectedGroup 
+            ? `กำลังดู: ${selectedGroup.name}`
+            : 'รายงานสรุป (คลิกกลุ่มเพื่อดูรายละเอียด)'
+          }
+        </h3>
+        
+        {selectedGroup ? (
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setSelectedGroup(null)}
+          >
+            <IoReturnUpBack size={16} style={{ marginRight: '5px' }} />
+            กลับไปดูสรุป
+          </button>
+        ) : (
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder=" ค้นหากลุ่มหรือผู้ใช้..."
+              value={searchReport}
+              onChange={e => setSearchReport(e.target.value)}
+            />
+          </div>
+        )}
+
+        {!selectedGroup && (
+          <table className="files-table">
+            <thead>
+              <tr>
+                <th>กลุ่ม / ผู้ใช้</th>
+                <th>จำนวนไฟล์ทั้งหมด</th>
+                <th>อัปโหลดล่าสุด</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReports.length > 0 ? (
+                filteredReports.map((item, index) => (
+                  <tr 
+                    key={index} 
+                    className="clickable-row"
+                    onClick={() => setSelectedGroup({ name: item.group_name, type: item.group_type })}
+                  >
+                    <td>{item.group_name}</td>
+                    <td>{item.total_files}</td>
+                    <td>{item.total_files > 0 ? new Date(item.last_upload).toLocaleDateString('th-TH') : 'N/A'}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', color: '#999' }}>
+                    ไม่พบข้อมูล
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      {/* 🔍 ส่วนที่ 2: ประวัติผู้ใช้ (ตารางล่าง) */}
+      {selectedGroup && (
+        <section className="report-section">
+          <h3> ประวัติการอัปโหลดไฟล์ของ: {selectedGroup.name}</h3>
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder=" ค้นหาชื่อผู้ใช้หรือชื่อไฟล์..."
+              value={searchLogs}
+              onChange={e => setSearchLogs(e.target.value)}
+            />
+          </div>
+
+          <table className="files-table">
+            <thead>
+              <tr>
+                <th>ชื่อผู้ใช้</th>
+                <th>การกระทำ</th>
+                <th>ชื่อไฟล์</th>
+                <th>ขนาด (MB)</th>
+                <th>วันที่</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map((log) => (
+                  <tr key={log.id}>
+                    <td>{log.username}</td>
+                    <td>อัปโหลดไฟล์</td>
+                    <td>{log.filename}</td>
+                    <td>{(log.filesize_bytes / 1024 / 1024).toFixed(2)}</td>
+                    <td>{new Date(log.uploaded_at).toLocaleString('th-TH')}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', color: '#999' }}>
+                    ไม่พบข้อมูลการอัปโหลดสำหรับกลุ่มนี้
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
     </div>
   );
 }

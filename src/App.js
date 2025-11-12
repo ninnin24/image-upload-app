@@ -11,12 +11,10 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 
 // Components
-// ✅ แก้ไข: เพิ่มการนำเข้า Header กลับเข้ามา
-import Header from './components/Header.jsx'; 
+import Header from './components/Header.jsx';
 
 // Protected Route: Component นี้ใช้ได้ดีแล้ว
 const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
-    // เพิ่มการตรวจสอบ role
     if (!user || !user.role || !allowedRoles.includes(user.role)) {
         return <Navigate to="/login" replace />;
     }
@@ -24,49 +22,55 @@ const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) =>
 };
 
 function App() {
+    // ⭐️ 1. เริ่มต้น user state เป็น 'undefined' เพื่อบอกว่า "กำลังโหลด"
     const [user, setUser] = useState(undefined);
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await axios.get('http://172.18.20.45:8080/auth/validate', {
+                // ⭐️ 2. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
+                const res = await axios.get(`/auth/validate`, {
                     withCredentials: true,
                 });
 
-                if (res.data && res.data.user) {
-                    setUser(res.data.user);
-                    localStorage.setItem('user_role', res.data.user.role); 
+                // ⭐️ 3. แก้ไข Logic: Backend ส่งข้อมูล user มาตรงๆ
+                if (res.data && res.data.username) {
+                    setUser(res.data);
+                    // ⭐️ 4. อัปเดต localStorage ให้ตรงกัน
+                    localStorage.setItem('user_role', res.data.role); 
                 } else {
-                    const savedRole = localStorage.getItem('user_role');
-                    setUser(savedRole ? { role: savedRole } : null);
+                    setUser(null);
+                    localStorage.removeItem('user_role');
                 }
             } catch (err) {
+                // ⭐️ 5. ถ้า Validate ล้มเหลว (401) ให้ setUser เป็น null
                 console.warn('Auth validate failed:', err.message);
-                const savedRole = localStorage.getItem('user_role');
-                setUser(savedRole ? { role: savedRole } : null);
+                setUser(null);
+                localStorage.removeItem('user_role');
             }
         };
 
         checkAuth();
-    }, []);
+    }, []); // ⭐️ รันแค่ครั้งเดียวตอนเปิดเว็บ
 
     const handleLogout = async () => {
         try {
+            // ⭐️ 6. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
             await axios.post(
-                'http://172.18.20.45:8080/auth/logout',
+                `/logout`, 
                 {},
                 { withCredentials: true }
             );
-            console.log('Logout success');
         } catch (err) {
             console.warn('Logout failed (ignored):', err.message);
         } finally {
-            localStorage.removeItem('auth_token');
+            // ⭐️ 7. ล้าง State และ localStorage
             localStorage.removeItem('user_role');
             setUser(null);
         }
     };
 
+    // ⭐️ 8. ถ้า user เป็น 'undefined' (กำลังโหลด) ให้แสดงหน้า Loading
     if (user === undefined) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -77,17 +81,15 @@ function App() {
     
     return (
         <Router>
-            {/* บรรทัดนี้ (เดิมคือ 85) จะใช้งานได้แล้วหลังจาก import Header */}
+            {/* ⭐️ 9. Header จะรับ user state ที่ถูกต้องจาก App.js */}
             <Header user={user} onLogout={handleLogout} /> 
 
             <Routes>
-                {/* Route: Login/Register (Header Component จะซ่อนตัวเองเมื่อ path ตรงกัน) */}
+                {/* ⭐️ 10. ส่ง setUser ให้ LoginPage เพื่ออัปเดต State หลัก */}
                 <Route path="/login" element={<LoginPage setUser={setUser} />} />
-                
-                {/* เพิ่ม Route สำหรับ Register ให้ LoginPage จัดการ */}
                 <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} /> 
                 
-                {/* Default route / redirect ตาม role */}
+                {/* ... (Route อื่นๆ ถูกต้องแล้ว) ... */}
                 <Route
                     path="/"
                     element={
@@ -102,8 +104,6 @@ function App() {
                         )
                     }
                 />
-
-                {/* สำหรับ backward compatibility: /home redirect ตาม role */}
                 <Route
                     path="/home"
                     element={
@@ -118,8 +118,6 @@ function App() {
                         )
                     }
                 />
-
-                {/* Protected Routes: User */}
                 <Route
                     path="/upload"
                     element={
@@ -128,7 +126,6 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route
                     path="/my-list"
                     element={
@@ -137,10 +134,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                
                 <Route path="/about" element={<AboutPage />} />
-
-                {/* Protected Routes: Admin */}
                 <Route
                     path="/admin/dashboard"
                     element={
@@ -149,8 +143,6 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-
-                {/* Protected Routes: User Dashboard */}
                 <Route
                     path="/user/dashboard"
                     element={
@@ -159,7 +151,6 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route path="*" element={<h1>404: Page Not Found</h1>} />
             </Routes>
         </Router>
