@@ -68,7 +68,7 @@ function ReportsAudit() {
     })
     .filter(log =>
       log.username.toLowerCase().includes(searchLogs.toLowerCase()) ||
-      log.filename.toLowerCase().includes(searchLogs.toLowerCase())
+      log.file_name.toLowerCase().includes(searchLogs.toLowerCase())
     );
 
   return (
@@ -180,9 +180,9 @@ function ReportsAudit() {
                   <tr key={log.id}>
                     <td>{log.username}</td>
                     <td>อัปโหลดไฟล์</td>
-                    <td>{log.filename}</td>
-                    <td>{(log.filesize_bytes / 1024 / 1024).toFixed(2)}</td>
-                    <td>{new Date(log.uploaded_at).toLocaleString('th-TH')}</td>
+                    <td>{log.file_name}</td>
+                    <td>{(log.file_size_bytes / 1024 / 1024).toFixed(2)}</td>
+                    <td>{new Date(log.created_at).toLocaleString('th-TH')}</td>
                   </tr>
                 ))
               ) : (

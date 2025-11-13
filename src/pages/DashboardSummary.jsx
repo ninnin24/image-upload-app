@@ -32,7 +32,6 @@ const DashboardSummary = () => {
     return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + s[i];
   };
 
-  // ✅ แปลงข้อมูลเป็น array สำหรับกราฟ
   const chartData = [
     { name: 'บริษัท', value: summary.companies },
     { name: 'ผู้ใช้', value: summary.users },
@@ -41,7 +40,6 @@ const DashboardSummary = () => {
 
   return (
     <div className="dashboard-summary-container">
-      {/* 🎯 กราฟแท่ง */}
       <div className="summary-graph-box">
         <h3>ภาพรวมระบบ</h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -62,10 +60,16 @@ const DashboardSummary = () => {
         ) : (
           recentFiles.map(f => (
             <div key={f.id} className="timeline-item">
-              <strong>{f.filename}</strong>
-              <p>บริษัท: {f.company_name}</p>
-              <p>อัปโหลด: {formatDate(f.uploaded_at)}</p>
-              <p>ขนาดไฟล์: {formatFileSize(f.filesize_bytes)}</p>
+              
+              {/* ⭐️ 1. แก้ไข: จาก f.filename เป็น f.file_name */}
+              <strong>{f.file_name}</strong>
+              
+              <p>บริษัท: {f.company_name}</p> 
+              
+              {/* ⭐️ 2. แก้ไข: จาก f.uploaded_at เป็น f.created_at */}
+              <p>อัปโหลด: {formatDate(f.created_at)}</p>
+              
+              <p>ขนาดไฟล์: {formatFileSize(f.file_size_bytes)}</p>
             </div>
           ))
         )}

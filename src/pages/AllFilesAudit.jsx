@@ -40,8 +40,8 @@ const AllFilesAudit = () => {
   // ตัวกรองไฟล์
   const filteredFiles = files.filter(file => {
     const matchCompany = filter.company ? file.company_name === filter.company : true;
-    const matchStart = filter.startDate ? new Date(file.uploaded_at) >= new Date(filter.startDate) : true;
-    const matchEnd = filter.endDate ? new Date(file.uploaded_at) <= new Date(filter.endDate) : true;
+    const matchStart = filter.startDate ? new Date(file.created_at) >= new Date(filter.startDate) : true;
+    const matchEnd = filter.endDate ? new Date(file.created_at) <= new Date(filter.endDate) : true;
     return matchCompany && matchStart && matchEnd;
   });
 
@@ -54,8 +54,6 @@ const AllFilesAudit = () => {
   return (
     <div className="admin-content-box">
       <h3>📁 ดูไฟล์ทั้งหมด ({filteredFiles.length})</h3>
-
-      {/* Filter Controls */}
       <div className="filter-controls">
         <select
           value={filter.company}
@@ -91,9 +89,9 @@ const AllFilesAudit = () => {
         filteredFiles.map(f => (
           <div key={f.id} className="timeline">
             <div className="timeline-item">
-              <strong>{f.filename}</strong>
+              <strong>{f.file_name}</strong>
               <p>บริษัท: {f.company_name}</p>
-              <p>อัปโหลด: {new Date(f.uploaded_at).toLocaleString()}</p>
+              <p>อัปโหลด: {new Date(f.created_at).toLocaleString()}</p>
               <p>ขนาดไฟล์: {formatFileSize(f.filesize_bytes)}</p>
             </div>
           </div>
