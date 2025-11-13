@@ -1,60 +1,92 @@
 import React from 'react';
-// ✅ นำเข้า useLocation เพื่อตรวจสอบ URL
-import { Link, useNavigate, useLocation } from 'react-router-dom'; 
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Header.css';
+import FileFlowz from '../assets/fileflowz2.png';
 
-// เพิ่ม Prop isRegister เข้ามาใน LoginPage.jsx และกำหนดใน App.js เพื่อให้แยกแยะได้
 const NO_HEADER_PATHS = ['/login', '/register', '/forgot-password'];
 
 function Header({ user, onLogout }) {
     const navigate = useNavigate();
-    // ✅ 1. ใช้ useLocation เพื่อดึงข้อมูล path ปัจจุบัน
-    const location = useLocation(); 
+    const location = useLocation();
 
-    // ✅ 2. ตรวจสอบเงื่อนไข: หาก path ปัจจุบันอยู่ในรายการที่กำหนด (Login/Register) ให้ซ่อน Header
+    // ซ่อน Header บนหน้า Login/Register
     if (NO_HEADER_PATHS.includes(location.pathname)) {
-        return null; // ซ่อน Component นี้โดยการคืนค่าเป็น null
+        return null;
     }
 
-    // ✅ แก้ไข: เปลี่ยน 'ผู้ดูแลระบบ' เป็น 'admin' เพื่อให้สอดคล้องกับ App.js และ ProtectedRoute
-    const isAdmin = user?.role === 'admin'; 
+    const isAdmin = user?.role === 'admin';
+    const homePath = isAdmin ? '/admin/dashboard' : user ? '/user/dashboard' : '/';
+
+    // เมนูหลักตามสถานะผู้ใช้
+    const renderMenu = () => {
+        if (!user) {
+            // Guest
+            return (
+                <>
+                    <Link to={homePath} className="nav-item">หน้าหลัก</Link>
+                    <a href="#products" className="nav-item">ผลิตภัณฑ์</a>
+                    <a href="#pricing" className="nav-item">ราคา</a>
+                    <Link to="/contact" className="nav-item">ติดต่อเรา</Link>
+                    <Link to="/about" className="nav-item">เกี่ยวกับเรา</Link>
+                </>
+            );
+        } else if (isAdmin) {
+            // Admin
+            return (
+                <>
+                    <Link to="/admin/dashboard" className="nav-item">แดชบอร์ด</Link>
+                    <Link to="/admin/users" className="nav-item">จัดการผู้ใช้</Link>
+                    <Link to="/admin/files" className="nav-item">จัดการไฟล์</Link>
+                    <Link to="/contact" className="nav-item">ติดต่อเรา</Link>
+                </>
+            );
+        } else {
+            // User
+            return (
+                <>
+                    <Link to="/user/dashboard" className="nav-item">หน้าหลัก</Link>
+                    <Link to="/upload" className="nav-item">อัปโหลดไฟล์</Link>
+                    <Link to="/my-list" className="nav-item">รายการของฉัน</Link>
+                    <Link to="/contact" className="nav-item">ติดต่อเรา</Link>
+                </>
+            );
+        }
+    };
 
     return (
-        <header className="main-header">
+        <header className="main-header bg-white shadow-md p-4 flex flex-col md:flex-row md:justify-between md:items-center">
             {/* Logo */}
             <div
-                className="logo"
-                onClick={() => navigate('/home')}
-                style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.5em' }}
+                className="flex items-center gap-3 cursor-pointer mb-2 md:mb-0"
+                onClick={() => navigate(homePath)}
             >
-                FileFlowz
+                <img src={FileFlowz} alt="โลโก้แบรนด์" className="logo w-10 h-10" />
             </div>
 
-            {/* เมนูกลาง */}
-            <nav className="nav-center">
-                <Link to="/home" className="nav-item">หน้าหลัก</Link>
-                
-                {/* แสดงเมนูเมื่อผู้ใช้ล็อกอินแล้ว */}
-                {user && <Link to="/upload" className="nav-item">อัปโหลดไฟล์</Link>}
-                {user && <Link to="/my-list" className="nav-item">รายการของฉัน</Link>}
-                
-                <Link to="/about" className="nav-item">เกี่ยวกับเรา</Link>
-                
-                {/* แสดงเมนู Admin เฉพาะ Admin */}
-                {/* ✅ ใช้ isAdmin ที่ตรวจสอบด้วย 'admin' แล้ว */}
-                {isAdmin && <Link to="/admin/dashboard" className="nav-item">แดชบอร์ดผู้ดูแล</Link>} 
+            {/* เมนูนำทาง */}
+            <nav className="flex flex-col md:flex-row md:gap-6 gap-2 text-gray-700 font-medium">
+                {renderMenu()}
             </nav>
 
-            {/* ปุ่มขวา */}
-            <div className="header-right">
+            {/* ปุ่มผู้ใช้ */}
+            <div className="flex items-center gap-3 mt-2 md:mt-0">
                 {user ? (
                     <>
-                        {/* ✅ ตรวจสอบว่า user.username มีข้อมูลหรือไม่ก่อนแสดง */}
-                        <span className="username">👋 {user.username || 'User'}</span> 
-                        <button onClick={onLogout} className="logout-btn">ออกจากระบบ</button>
+                        <span className="text-gray-600 font-medium">👋 {user.username || 'ผู้ใช้'}</span>
+                        <button
+                            onClick={onLogout}
+                            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                        >
+                            ออกจากระบบ
+                        </button>
                     </>
                 ) : (
-                    <button onClick={() => navigate('/login')} className="login-btn">เข้าสู่ระบบ</button>
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                        เข้าสู่ระบบ
+                    </button>
                 )}
             </div>
         </header>

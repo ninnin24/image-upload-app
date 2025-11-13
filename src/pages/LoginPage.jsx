@@ -1,33 +1,15 @@
-import React, { useState, useEffect } from 'react';  // ✅ เพิ่ม useEffect
+import React, { useState } from 'react'; // ⭐️ 1. ลบ useEffect ออก
 import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
-
-
 import HappySoftLogo from '../assets/fileflowz2.png';
 
-const API_URL = 'http://172.18.20.45:8080';
-
-function LoginPage() {
+function LoginPage({ setUser, isRegister = false }) { 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isRegistering, setIsRegistering] = useState(false);
-
+    // ⭐️ 4. แก้ไข isRegistering 
+    const [isRegistering, setIsRegistering] = useState(isRegister);
     const navigate = useNavigate();
-
-    // ✅ ตรวจสอบ token ทันทีเมื่อเปิดหน้า (จำสถานะล็อกอินไว้)
-    useEffect(() => {
-        const token = localStorage.getItem('auth_token');
-        const role = localStorage.getItem('user_role');
-        if (token && role) {
-            if (role === 'admin') {
-                navigate('/admin/dashboard', { replace: true });
-            } else {
-                navigate('/home', { replace: true });
-            }
-        }
-    }, [navigate]);
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -38,21 +20,19 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/login`, {
+            const response = await fetch(`/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
-                credentials: 'include', // ส่ง cookie
+                credentials: 'include',
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                const { token, role } = data;
-                localStorage.setItem('auth_token', token);
-                localStorage.setItem('user_role', role);
+                const { role } = data;
+                setUser(data); 
 
-                // ✅ Role-Based Routing
                 if (role === 'admin') {
                     navigate('/admin/dashboard', { replace: true });
                 } else {
@@ -76,7 +56,7 @@ function LoginPage() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/register`, {
+            const response = await fetch(`/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
@@ -86,7 +66,7 @@ function LoginPage() {
 
             if (response.ok) {
                 alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
-                setIsRegistering(false);
+                setIsRegistering(false); 
             } else {
                 setError(data.message || 'การลงทะเบียนล้มเหลว');
             }

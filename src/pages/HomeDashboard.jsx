@@ -1,93 +1,108 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Home.css';
+import React from "react";
+import { useNavigate, Navigate } from "react-router-dom";
+import Header from "../components/Header.jsx"; // เพิ่ม Header
+import "../styles/Home.css";
 
-function HomeDashboard() {
-  const [files, setFiles] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+const HomeDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
-  // ตรวจสอบ cookie เพื่อดึงข้อมูล user
-  useEffect(() => {
-    axios.get('http://172.18.20.45:8080/auth/validate', { withCredentials: true })
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // โหลดไฟล์ตามสิทธิ์
-  const fetchFiles = async () => {
-    try {
-      let url = '';
-      if (user?.role === 'ผู้ดูแลระบบ') url = 'http://172.18.20.45:8080/admin/files';
-      else url = 'http://172.18.20.45:8080/user/files'; // user ได้ไฟล์ของตนเอง
-      const res = await axios.get(url, { withCredentials: true });
-      setFiles(res.data);
-    } catch {
-      setFiles([]);
+  // 🔹 ถ้าล็อกอินแล้ว → redirect ไปหน้า dashboard ตาม role
+  if (user) {
+    if (user.role === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else {
+      return <Navigate to="/user/dashboard" replace />;
     }
-  };
+  }
 
-  useEffect(() => {
-    if (user) fetchFiles();
-  }, [user]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_role');
-    navigate('/login', { replace: true });
-  };
-
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>กำลังโหลดข้อมูล...</div>;
-
+  // 🔹 Landing Page สำหรับผู้ที่ยังไม่ล็อกอิน
   return (
-    <div className="home-container">
-      <header className="home-header">
-        <div className="home-logo" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
-          <span style={{ fontSize: '1.6em', fontWeight: 'bold' }}>FileFlowz</span>
+    <div className="font-sans">
+      {/* Header สำหรับ Guest */}
+      <Header user={user} onLogout={onLogout} />
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white text-center py-32 px-4">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          แพลตฟอร์มภาพ & วิดีโอ สำหรับองค์กรที่มั่นใจ
+        </h1>
+        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+          จัดเก็บ แปลง ปรับ และส่งมอบสื่อของคุณอย่างรวดเร็ว ด้วย API, SDK และระบบอัตโนมัติ
+        </p>
+        <div className="space-x-4">
+          <button
+            onClick={() => navigate("/login")}
+            className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition"
+          >
+            Login
+          </button>
+          <button
+            onClick={() => navigate("/login")}
+            className="border border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-blue-600 transition"
+          >
+            สมัครใช้งาน
+          </button>
         </div>
-
-        <nav className="header-nav-center">
-          <Link to="/home" className="active">หน้าหลัก</Link>
-          <Link to="/uploadimage">อัปโหลดไฟล์</Link>
-          <Link to="/my-list">รายการของฉัน</Link>
-          <Link to="/about">เกี่ยวกับ</Link>
-        </nav>
-
-        <div className="user-info">
-          {user && <span>👤 {user.username}</span>}
-          <button className="sidebar-btn logout" onClick={handleLogout}>ออกจากระบบ</button>
-        </div>
-      </header>
-
-      <section className="hero">
-        <h1>ยินดีต้อนรับ, {user?.username || 'ผู้ใช้'}</h1>
-        <p>จัดการไฟล์กิจกรรมของคุณได้ง่าย ๆ ที่นี่</p>
       </section>
 
-      <div className="container">
-        <h2>ไฟล์ล่าสุด</h2>
-        {files.length === 0 ? (
-          <p>ยังไม่มีไฟล์อัปโหลด</p>
-        ) : (
-          <div className="file-list">
-            {files.map((file, idx) => (
-              <div key={idx} className="timeline">
-                <div className="timeline-item">
-                  <strong>{file.filename}</strong>
-                  <p>บริษัท: {file.company_name || 'ไม่ระบุ'}</p>
-                  <p>อัปโหลดโดย: {file.uploader_name || 'ไม่ระบุ'}</p>
-                  <p>วันที่: {new Date(file.uploaded_at).toLocaleString()}</p>
-                </div>
-              </div>
-            ))}
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-white text-center">
+        <h2 className="text-3xl font-bold mb-12">ความสามารถหลัก</h2>
+        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="p-6 border rounded-lg shadow hover:shadow-lg transition">
+            <img src="/icon-imageapi.svg" alt="API ภาพ" className="h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">API ภาพ</h3>
+            <p>เพิ่มภาพบนเว็บไซต์หรือแอปในไม่กี่นาที</p>
           </div>
-        )}
-      </div>
+          <div className="p-6 border rounded-lg shadow hover:shadow-lg transition">
+            <img src="/icon-videoapi.svg" alt="API วิดีโอ" className="h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">API วิดีโอ</h3>
+            <p>เพิ่มวิดีโอพร้อมระบบแปลงและส่งแบบเรียลไทม์</p>
+          </div>
+          <div className="p-6 border rounded-lg shadow hover:shadow-lg transition">
+            <img src="/icon-dam.svg" alt="DAM" className="h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">จัดการสื่อ (DAM)</h3>
+            <p>ไลบรารีสื่อเต็มรูปแบบ พร้อมการแท็กอัตโนมัติและควบคุมสิทธิ์</p>
+          </div>
+          <div className="p-6 border rounded-lg shadow hover:shadow-lg transition">
+            <img src="/icon-ai.svg" alt="AI วิเคราะห์สื่อ" className="h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">AI & วิเคราะห์สื่อ</h3>
+            <p>ค้นหา ใช้วัตถุ และครอปอัตโนมัติด้วย AI</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-blue-600 text-white text-center py-20 px-4">
+        <h2 className="text-3xl font-bold mb-6">
+          พร้อมเริ่มสร้างประสบการณ์สื่อที่น่าทึ่งแล้วหรือยัง?
+        </h2>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg shadow hover:bg-gray-100 transition"
+        >
+          เริ่มใช้งานฟรี
+        </button>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-4 bg-gray-50 text-center">
+        <h2 className="text-3xl font-bold mb-12">เสียงจากลูกค้า</h2>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="italic">
+            “ระบบของเราเร็วขึ้นอย่างมีนัยสำคัญ ใช้งานง่ายกว่าเดิมมาก”
+            <p className="font-semibold mt-2">– David Lien, VP of Engineering, Minted</p>
+          </div>
+          <div className="flex justify-center flex-wrap gap-8 mt-8">
+            <img src="/client1.png" alt="Client 1" className="h-12 opacity-70 hover:opacity-100 transition" />
+            <img src="/client2.png" alt="Client 2" className="h-12 opacity-70 hover:opacity-100 transition" />
+            <img src="/client3.png" alt="Client 3" className="h-12 opacity-70 hover:opacity-100 transition" />
+            <img src="/client4.png" alt="Client 4" className="h-12 opacity-70 hover:opacity-100 transition" />
+          </div>
+        </div>
+      </section>
     </div>
   );
-}
+};
 
 export default HomeDashboard;

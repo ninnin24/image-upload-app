@@ -2,169 +2,141 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 
-// Pages
-import UploadImage from './pages/UploadImage.jsx';
+// ✅ Pages
+import HomeDashboard from './pages/HomeDashboard.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import UploadImage from './pages/UploadImage.jsx';
 import MyListPage from './pages/MyListPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
+import ContactPage from './pages/ContactPage.jsx';
 
-// Components
-import Header from './components/Header.jsx'; // ✅ Import Header ถูกต้องแล้ว
+// ✅ Components
+import Header from './components/Header.jsx';
 
-// กำหนด API URL ที่ใช้ในไฟล์นี้ (หากไม่มีในโค้ดต้นฉบับ ให้เพิ่มเอง)
-const API_URL = 'http://172.18.20.45:8080';
-
-// Protected Route: Component นี้ใช้ได้ดีแล้ว
+// ✅ Protected Route
 const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
-    // เพิ่มการตรวจสอบ role
-    if (!user || !user.role || !allowedRoles.includes(user.role)) {
-        return <Navigate to="/login" replace />;
-    }
-    return children;
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 };
 
 function App() {
-    const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(undefined);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                // ใช้ API_URL
-                const res = await axios.get(`${API_URL}/auth/validate`, {
-                    withCredentials: true,
-                });
-
-                if (res.data && res.data.user) {
-                    setUser(res.data.user);
-                    localStorage.setItem('user_role', res.data.user.role); 
-                } else {
-                    const savedRole = localStorage.getItem('user_role');
-                    setUser(savedRole ? { role: savedRole } : null);
-                }
-            } catch (err) {
-                console.warn('Auth validate failed:', err.message);
-                const savedRole = localStorage.getItem('user_role');
-                setUser(savedRole ? { role: savedRole } : null);
-            }
-        };
-
-        checkAuth();
-    }, []);
-
-    const handleLogout = async () => {
-        try {
-            // ✅ แก้ไข Syntax Error: ใช้ Template Literal (Backticks)
-            await axios.post(
-                `${API_URL}/auth/logout`, // ใช้ API_URL และ Backticks
-                {},
-                { withCredentials: true }
-            );
-            console.log('Logout success');
-        } catch (err) {
-            console.warn('Logout failed (ignored):', err.message);
-        } finally {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_role');
-            setUser(null);
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get('/auth/validate', { withCredentials: true });
+        if (res.data && res.data.username) {
+          setUser(res.data);
+          localStorage.setItem('user_role', res.data.role);
+        } else {
+          setUser(null);
+          localStorage.removeItem('user_role');
         }
+      } catch (err) {
+        console.warn('Auth validate failed:', err.message);
+        setUser(null);
+        localStorage.removeItem('user_role');
+      }
     };
+    checkAuth();
+  }, []);
 
-    if (user === undefined) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center' }}>
-                กำลังโหลดข้อมูลผู้ใช้...
-            </div>
-        );
+  const handleLogout = async () => {
+    try {
+      await axios.post('/logout', {}, { withCredentials: true });
+    } catch (err) {
+      console.warn('Logout failed (ignored):', err.message);
+    } finally {
+      localStorage.removeItem('user_role');
+      setUser(null);
     }
-    
-    return (
-        <Router>
-            <Header user={user} onLogout={handleLogout} /> 
+  };
 
-            <Routes>
-                {/* Route: Login/Register (Header Component จะซ่อนตัวเองเมื่อ path ตรงกัน) */}
-                <Route path="/login" element={<LoginPage setUser={setUser} />} />
-                <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} /> 
-                
-                {/* Default route / redirect ตาม role */}
-                <Route
-                    path="/"
-                    element={
-                        user ? (
-                            user.role === 'admin' ? (
-                                <Navigate to="/admin/dashboard" replace />
-                            ) : (
-                                <Navigate to="/user/dashboard" replace />
-                            )
-                        ) : (
-                            <Navigate to="/login" replace />
-                        )
-                    }
-                />
+  if (user === undefined) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>กำลังโหลดข้อมูลผู้ใช้...</div>;
+  }
 
-                {/* สำหรับ backward compatibility: /home redirect ตาม role */}
-                <Route
-                    path="/home"
-                    element={
-                        user ? (
-                            user.role === 'admin' ? (
-                                <Navigate to="/admin/dashboard" replace />
-                            ) : (
-                                <Navigate to="/user/dashboard" replace />
-                            )
-                        ) : (
-                            <Navigate to="/login" replace />
-                        )
-                    }
-                />
+  return (
+    <Router>
+      {/* ✅ Header แสดงตามหน้า */}
+      <Header user={user} onLogout={handleLogout} />
 
-                {/* Protected Routes: User */}
-                <Route
-                    path="/upload"
-                    element={
-                        <ProtectedRoute user={user} allowedRoles={['user']}>
-                            <UploadImage user={user} />
-                        </ProtectedRoute>
-                    }
-                />
+      <Routes>
+        {/* ✅ หน้าเปิดเว็บไซต์ */}
+        <Route path="/" element={<HomeDashboard />} />
+        <Route path="/home" element={<HomeDashboard />} />
 
-                <Route
-                    path="/my-list"
-                    element={
-                        <ProtectedRoute user={user}>
-                            <MyListPage user={user} />
-                        </ProtectedRoute>
-                    }
-                />
-                
-                <Route path="/about" element={<AboutPage />} />
+        {/* ✅ Auth */}
+        <Route path="/login" element={<LoginPage setUser={setUser} />} />
+        <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} />
+        <Route path="/forgot-password" element={<div style={{ padding: '50px' }}>หน้านี้อยู่ระหว่างพัฒนา 🔧</div>} />
 
-                {/* Protected Routes: Admin */}
-                <Route
-                    path="/admin/dashboard"
-                    element={
-                        <ProtectedRoute user={user} allowedRoles={['admin']}>
-                            <AdminDashboard user={user} />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* ✅ Public */}
+        <Route path="/about" element={<AboutPage user={user} onLogout={handleLogout} />} />
+        <Route path="/contact" element={<ContactPage />} /> {/* ✅ เพิ่มตรงนี้ */}
 
-                {/* Protected Routes: User Dashboard */}
-                <Route
-                    path="/user/dashboard"
-                    element={
-                        <ProtectedRoute user={user} allowedRoles={['user']}>
-                            <UserDashboard user={user} />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* ✅ สำหรับ User ปกติ */}
+        <Route
+          path="/upload"
+          element={
+            <ProtectedRoute user={user} allowedRoles={['user']}>
+              <UploadImage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-list"
+          element={
+            <ProtectedRoute user={user}>
+              <MyListPage user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/dashboard"
+          element={
+            <ProtectedRoute user={user} allowedRoles={['user']}>
+              <UserDashboard user={user} />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route path="*" element={<h1>404: Page Not Found</h1>} />
-            </Routes>
-        </Router>
-    );
+        {/* ✅ สำหรับ Admin */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute user={user} allowedRoles={['admin']}>
+              <AdminDashboard user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute user={user} allowedRoles={['admin']}>
+              <div style={{ padding: '50px' }}>หน้าจัดการผู้ใช้ (Admin เท่านั้น)</div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/files"
+          element={
+            <ProtectedRoute user={user} allowedRoles={['admin']}>
+              <div style={{ padding: '50px' }}>หน้าจัดการไฟล์ (Admin เท่านั้น)</div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ✅ 404 */}
+        <Route path="*" element={<h1 style={{ padding: '50px' }}>404: ไม่พบหน้านี้ 😢</h1>} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

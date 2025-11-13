@@ -1,14 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header.jsx';
 import '../styles/AboutPage.css';
 
-function AboutPage() {
-  const navigate = useNavigate();
-
+function AboutPage({ user, onLogout }) { // ✅ รับ props มาจาก App.js
   return (
     <div className="about-page-wrapper">
-      <Header />
+      <Header user={user} onLogout={onLogout} />  {/* ✅ ส่งต่อ props ให้ Header */}
 
       {/* Hero Section */}
       <section className="hero">
@@ -25,7 +22,8 @@ function AboutPage() {
 
         <h2>พันธกิจ</h2>
         <p>
-          เป็นพันธมิตรทางเทคโนโลยีที่เชื่อถือได้และสร้างสรรค์ (Trusted & Innovative Technology Partner) สำหรับธุรกิจทุกขนาด
+          เป็นพันธมิตรทางเทคโนโลยีที่เชื่อถือได้และสร้างสรรค์ (Trusted & Innovative Technology Partner)
+          สำหรับธุรกิจทุกขนาด
         </p>
 
         <h2>ค่านิยมหลัก (Core Values)</h2>
