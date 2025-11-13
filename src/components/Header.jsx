@@ -21,7 +21,6 @@ function Header({ user, onLogout }) {
 
     return (
         <header className="main-header">
-            {/* Logo */}
             <div
                 className="logo"
                 onClick={() => navigate('/home')}
@@ -29,19 +28,11 @@ function Header({ user, onLogout }) {
             >
                 FileFlowz
             </div>
-
-            {/* เมนูกลาง */}
             <nav className="nav-center">
                 <Link to="/home" className="nav-item">หน้าหลัก</Link>
-                
-                {/* แสดงเมนูเมื่อผู้ใช้ล็อกอินแล้ว */}
-                {user && <Link to="/upload" className="nav-item">อัปโหลดไฟล์</Link>}
-                {user && <Link to="/my-list" className="nav-item">รายการของฉัน</Link>}
-                
+                {user && !isAdmin && <Link to="/upload" className="nav-item">อัปโหลดไฟล์</Link>}
+                {user && !isAdmin && <Link to="/my-list" className="nav-item">รายการของฉัน</Link>}
                 <Link to="/about" className="nav-item">เกี่ยวกับเรา</Link>
-                
-                {/* แสดงเมนู Admin เฉพาะ Admin */}
-                {/* ✅ ใช้ isAdmin ที่ตรวจสอบด้วย 'admin' แล้ว */}
                 {isAdmin && <Link to="/admin/dashboard" className="nav-item">แดชบอร์ดผู้ดูแล</Link>} 
             </nav>
 
@@ -49,7 +40,6 @@ function Header({ user, onLogout }) {
             <div className="header-right">
                 {user ? (
                     <>
-                        {/* ✅ ตรวจสอบว่า user.username มีข้อมูลหรือไม่ก่อนแสดง */}
                         <span className="username">👋 {user.username || 'User'}</span> 
                         <button onClick={onLogout} className="logout-btn">ออกจากระบบ</button>
                     </>
