@@ -1,12 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import AddUserModal from '../components/AddUserModal';
+import AddUserModal from '../components/AddUserModal'; // สมมติว่า Modal นี้รองรับ MUI หรือจะปรับให้รองรับ
 import { VscAccount } from "react-icons/vsc";
-import '../styles/Dashboard.css';
+
+// ⭐️ MUI Imports ⭐️
+import {
+  Container,
+  Typography,
+  Button,
+  Box,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+
+// ⭐️ Icon Imports for Actions ⭐️
+import { Delete as DeleteIcon, VpnKey as ResetPasswordIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
+
   // ⭐️ 1. ลบ API_URL ทิ้ง
 
   const fetchUsers = async () => {
@@ -16,6 +36,7 @@ function UserManagement() {
       setUsers(res.data);
     } catch (err) {
       console.error("Error fetching users:", err);
+      // เพิ่มการแจ้งเตือนแบบ Material-UI (เช่น Snackbar) ในแอปจริง
     }
   };
 
@@ -52,17 +73,35 @@ function UserManagement() {
   };
 
   return (
-    <div className="main-content-wrapper"> 
-      <div className="admin-page-header">
-        <div className="admin-page-title">
-          <VscAccount size={22} className="icon" />
-          <h3>จัดการผู้ใช้</h3>
-        </div>
-        <button className="btn btn-accent" onClick={() => setShowAddModal(true)}>
-          + เพิ่มผู้ใช้ใหม่
-        </button>
-      </div>
+    // ใช้ Container ของ MUI เพื่อจำกัดความกว้างและจัดให้อยู่กึ่งกลาง
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 3 
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <VscAccount size={24} style={{ marginRight: '8px' }} />
+          <Typography variant="h4" component="h1">
+            จัดการผู้ใช้
+          </Typography>
+        </Box>
+        
+        {/* ใช้ Button ของ MUI */}
+        <Button 
+          variant="contained" 
+          color="primary" // ใช้สีหลักของ Material Design
+          startIcon={<PersonAddIcon />}
+          onClick={() => setShowAddModal(true)}
+        >
+          เพิ่มผู้ใช้ใหม่
+        </Button>
+      </Box>
 
+      {/* Modal จัดการผู้ใช้ */}
       {showAddModal && (
         <AddUserModal
           onClose={() => setShowAddModal(false)}
@@ -70,49 +109,92 @@ function UserManagement() {
         />
       )}
 
+      {/* ตารางแสดงผู้ใช้ */}
       {users.length === 0 ? (
-        <p>ไม่พบผู้ใช้</p>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="body1">ไม่พบผู้ใช้</Typography>
+        </Paper>
       ) : (
-        <table className="files-table">
-          <thead>
-            <tr>
-              <th>ชื่อผู้ใช้</th>
-              <th>อีเมล</th>
-              <th>บริษัท</th>
-              <th>สิทธิ์</th>
-              <th>การดำเนินการ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(u => (
-              <tr key={u.id}>
-                <td>{u.username}</td>
-                <td>{u.email ?? '-'}</td>
-                <td>{u.company_name ?? '-'}</td>
-                <td>{u.role}</td>
-                <td className="action-cell">
-                  <button
-                    type="button"
-                    className="table-action-btn reset"
-                    onClick={() => handleResetPassword(u.id, u.username)}
-                  >
-                    รีเซ็ต
-                  </button>
-                  <span className="action-divider">|</span>
-                  <button
-                    type="button"
-                    className="table-action-btn delete"
-                    onClick={() => handleDelete(u.id, u.username)}
-                  >
-                    ลบ
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}> {/* ใช้ Paper เป็นพื้นหลังของตาราง */}
+          <Table sx={{ minWidth: 650 }} aria-label="user management table">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#f5f5f5' }}> {/* สีพื้นหลังหัวตาราง */}
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="bold">ชื่อผู้ใช้</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="bold">อีเมล</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="bold">บริษัท</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="bold">สิทธิ์</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="subtitle1" fontWeight="bold">การดำเนินการ</Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map(u => (
+                <TableRow
+                  key={u.id}
+                  hover // มีเอฟเฟกต์เมื่อเมาส์ชี้
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {u.username}
+                  </TableCell>
+                  <TableCell>{u.email ?? '-'}</TableCell>
+                  <TableCell>{u.company_name ?? '-'}</TableCell>
+                  <TableCell>
+                    <Box 
+                      component="span" 
+                      sx={{
+                        display: 'inline-block',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                        fontSize: '0.8rem',
+                        backgroundColor: u.role === 'admin' ? '#ef9a9a' : '#c5e1a5', // สีตามสิทธิ์
+                        color: u.role === 'admin' ? '#b71c1c' : '#33691e',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {u.role}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    {/* ใช้ IconButton สำหรับ Action */}
+                    <Tooltip title="รีเซ็ตรหัสผ่าน">
+                      <IconButton 
+                        color="warning" // สีส้มสำหรับการเตือน/รีเซ็ต
+                        onClick={() => handleResetPassword(u.id, u.username)}
+                        aria-label={`รีเซ็ตรหัสผ่านของ ${u.username}`}
+                      >
+                        <ResetPasswordIcon />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    <Tooltip title="ลบผู้ใช้">
+                      <IconButton 
+                        color="error" // สีแดงสำหรับการลบ
+                        onClick={() => handleDelete(u.id, u.username)}
+                        aria-label={`ลบผู้ใช้ ${u.username}`}
+                        sx={{ ml: 1 }} // เว้นระยะห่างเล็กน้อย
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+    </Container>
   );
 }
 

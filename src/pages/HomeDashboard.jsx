@@ -3,7 +3,6 @@
 import React from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import HomeLandingContent from "../components/HomeLandingContent.jsx"; 
-// ไม่ต้อง import Header ที่นี่แล้ว
 
 const HomeDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();

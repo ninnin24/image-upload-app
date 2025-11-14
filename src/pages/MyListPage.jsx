@@ -1,32 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-// ⭐️ 1. ลบ Header (App.js จัดการแล้ว)
-// ⭐️ 2. (แนะนำ) Import CSS สำหรับหน้านี้
-import '../styles/MyListPage.css';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Button, 
+  CircularProgress, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemIcon, 
+  Checkbox, 
+  IconButton, 
+  Alert,
+  Tooltip,
+} from '@mui/material';
 
-// ⭐️ 3. รับ 'user' เป็น prop (App.js ส่งมาให้)
+import FolderIcon from '@mui/icons-material/Folder';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+
 function MyListPage({ user }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  // ⭐️ 4. เพิ่ม State สำหรับเก็บไฟล์ที่เลือก
+  const [error, setError] = useState(null); 
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
-  // ⭐️ 5. แก้ไข useEffect: ลบ /auth/validate ออก (App.js ทำแล้ว)
   useEffect(() => {
-    // โหลดไฟล์เฉพาะเมื่อ 'user' (จาก prop) พร้อมใช้งาน
     if (user) {
       setLoading(true);
-      // ⭐️ 6. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
+      setError(null);
       axios.get('/user/files', { withCredentials: true })
-        .then(res => setFiles(res.data))
-        .catch(() => setFiles([]))
+        .then(res => {
+          setFiles(res.data);
+          setError(null);
+        })
+        .catch(() => {
+          setFiles([]);
+          setError("ไม่สามารถโหลดรายการไฟล์ได้ กรุณาลองใหม่อีกครั้ง");
+        })
         .finally(() => setLoading(false));
     }
-  }, [user]); // ⭐️ ให้ re-run เมื่อ 'user' เปลี่ยน
+  }, [user]);
 
-  // ⭐️ 7. ลบ handleLogout (App.js จัดการแล้ว)
-
-  // ⭐️ 8. ฟังก์ชันสำหรับจัดการ Checkbox
   const handleSelectFile = (fileId) => {
     setSelectedFiles(prevSelected => {
       const newSelected = new Set(prevSelected);
@@ -39,25 +55,22 @@ function MyListPage({ user }) {
     });
   };
 
-  // ⭐️ 9. ฟังก์ชันสำหรับลบไฟล์ที่เลือก
   const handleDeleteSelected = async () => {
     if (selectedFiles.size === 0) return;
 
     if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ ${selectedFiles.size} ไฟล์ที่เลือก?`)) {
       try {
-        // ⭐️ 10. เรียก API ใหม่ที่เราสร้างใน Go
-        const res = await axios.post('/files/delete-multiple', 
-          { ids: [...selectedFiles] }, // ส่ง Array ของ ID
+        await axios.post('/files/delete-multiple', 
+          { ids: [...selectedFiles] },
           { withCredentials: true }
         );
 
-        alert(res.data.message);
+        alert(`ลบไฟล์ที่เลือกจำนวน ${selectedFiles.size} ไฟล์สำเร็จ`);
 
-        // ⭐️ 11. อัปเดต UI โดยลบไฟล์ที่ลบสำเร็จออกจาก State
         setFiles(prevFiles => 
           prevFiles.filter(file => !selectedFiles.has(file.id))
         );
-        setSelectedFiles(new Set()); // เคลียร์รายการที่เลือก
+        setSelectedFiles(new Set());
         
       } catch (err) {
         console.error("Delete failed:", err);
@@ -66,56 +79,110 @@ function MyListPage({ user }) {
     }
   };
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>กำลังโหลดไฟล์...</div>;
 
+  const formatFileSize = (bytes) => (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  const formatDate = (dateString) => new Date(dateString).toLocaleString('th-TH');
+
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ textAlign: 'center', py: 5 }}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ mt: 2 }}>กำลังโหลดไฟล์...</Typography>
+      </Container>
+    );
+  }
+  
   return (
-    // ⭐️ 12. ลบ <div> ครอบและ <Header>
-    <div className="mylist-container">
-      <div className="mylist-header">
-        <h2>📁 ไฟล์ของฉัน</h2>
-        <button 
-          className="delete-selected-btn"
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 3 
+        }}
+      >
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+          <FolderIcon color="primary" sx={{ mr: 1, fontSize: '1.2em' }} /> ไฟล์ของฉัน
+        </Typography>
+
+        <Button 
+          variant="contained" 
+          color="error" 
           onClick={handleDeleteSelected}
-          disabled={selectedFiles.size === 0} // ⭐️ 13. ปิดปุ่มถ้ายังไม่เลือก
+          disabled={selectedFiles.size === 0}
+          startIcon={<DeleteIcon />} // ⭐️ เพิ่ม Icon
         >
           ลบไฟล์ที่เลือก ({selectedFiles.size})
-        </button>
-      </div>
+        </Button>
+      </Box>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {files.length === 0 ? (
-        <p>ยังไม่มีไฟล์</p>
+
+        <Typography variant="body1" sx={{ textAlign: 'center', mt: 4 }}>
+          คุณยังไม่มีไฟล์ในระบบ
+        </Typography>
       ) : (
-        <ul className="file-list-ul">
+      
+        <List sx={{ bgcolor: 'background.paper', border: '1px solid #e0e0e0', borderRadius: 1, boxShadow: 1 }}>
           {files.map(file => (
-            <li key={file.id} className="file-list-item">
-              <input
-                type="checkbox"
-                className="file-checkbox"
-                checked={selectedFiles.has(file.id)}
-                onChange={() => handleSelectFile(file.id)}
+          
+            <ListItem 
+              key={file.id} 
+              secondaryAction={
+           
+                <Tooltip title="ดูไฟล์">
+                  <IconButton 
+                    edge="end" 
+                    aria-label="view"
+                    href={`http://172.18.20.45:8080/files/download?id=${file.id}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <VisibilityIcon />
+                  </IconButton>
+                </Tooltip>
+              }
+              divider 
+              sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+            >
+             
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  checked={selectedFiles.has(file.id)}
+                  tabIndex={-1}
+                  disableRipple
+                  onChange={() => handleSelectFile(file.id)}
+                  color="primary"
+                />
+              </ListItemIcon>
+           
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                    {file.filename}
+                  </Typography>
+                }
+                secondary={
+                  <Box component="span" sx={{ display: 'flex', gap: 2 }}>
+                    <Typography component="span" variant="caption" color="text.secondary">
+                      อัปโหลด: {formatDate(file.uploaded_at)}
+                    </Typography>
+                    <Typography component="span" variant="caption" color="text.secondary">
+                      ขนาด: {formatFileSize(file.filesize_bytes)}
+                    </Typography>
+                  </Box>
+                }
               />
-              <span className="file-name">{file.filename}</span>
-              <span className="file-date">
-                {new Date(file.uploaded_at).toLocaleString('th-TH')}
-              </span>
-              <span className="file-size">
-                { (file.filesize_bytes / 1024 / 1024).toFixed(2) } MB
-              </span>
-              {/* ⭐️ 14. ปุ่ม "ดูไฟล์" (Download) */}
-              <a 
-                // ✅ ถูก: ชี้ไปที่ Backend (8080) โดยตรง
-                href={`http://172.18.20.45:8080/files/download?id=${file.id}`} 
-                className="file-action-btn view-btn"
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                ดูไฟล์
-              </a>
-            </li>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
-    </div>
+    </Container>
   );
 }
 
