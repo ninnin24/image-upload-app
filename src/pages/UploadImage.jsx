@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Container } from '@mui/material';
+// แก้ไข: ลบ IconButton ออก เพราะไม่ได้ใช้
+import { Box, Typography, Button, Container } from '@mui/material'; 
 import { useTheme } from '@mui/material/styles';
 import { FaFileUpload } from 'react-icons/fa'; 
-
+import { MdClear } from 'react-icons/md'; 
 
 function UploadImage({ user }) {
-    const theme = useTheme(); // ✅ ดึงสี Theme มาใช้
+    const theme = useTheme(); 
     const [files, setFiles] = useState([]); 
     const [isDragging, setIsDragging] = useState(false); 
     const fileInputRef = useRef(null); 
@@ -29,6 +30,14 @@ function UploadImage({ user }) {
             fileInputRef.current.value = null;
         } catch (e) {
             alert('อัปโหลดล้มเหลว');
+        }
+    };
+    
+    // ฟังก์ชันสำหรับยกเลิกไฟล์ทั้งหมด
+    const handleClearFiles = () => {
+        setFiles([]);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = null;
         }
     };
 
@@ -67,35 +76,51 @@ function UploadImage({ user }) {
                 <Box sx={{ color: theme.palette.text.secondary, opacity: 0.7 }}>
                     <FaFileUpload size={40} style={{ marginBottom: 10 }} />
                     <Typography variant="body1">ยังไม่ได้เลือกไฟล์</Typography>
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block', color: theme.palette.text.hint }}>
+                        รองรับไฟล์ภาพทุกประเภท (สูงสุด 10MB ต่อไฟล์)
+                    </Typography>
                 </Box>
             );
         }
         return (
-            <Box 
-                component="ul" 
-                sx={{ 
-                    listStyle: 'none', 
-                    padding: 0, 
-                    margin: 0, 
-                    maxHeight: 150, 
-                    overflowY: 'auto',
-                    textAlign: 'left'
-                }}
-            >
-                {Array.from(files).map((file, index) => (
-                    <Typography 
-                        component="li" 
-                        key={index} 
-                        variant="body2" 
-                        sx={{ 
-                            p: 0.5, 
-                            borderBottom: `1px dashed ${theme.palette.text.secondary}`,
-                            '&:last-child': { borderBottom: 'none' }
-                        }}
-                    >
-                        {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </Typography>
-                ))}
+            <Box>
+                <Box 
+                    component="ul" 
+                    sx={{ 
+                        listStyle: 'none', 
+                        padding: 0, 
+                        margin: 0, 
+                        maxHeight: 150, 
+                        overflowY: 'auto',
+                        textAlign: 'left',
+                        mb: 1
+                    }}
+                >
+                    {Array.from(files).map((file, index) => (
+                        <Typography 
+                            component="li" 
+                            key={index} 
+                            variant="body2" 
+                            sx={{ 
+                                p: 0.5, 
+                                borderBottom: `1px dashed ${theme.palette.divider}`, 
+                                '&:last-child': { borderBottom: 'none' }
+                            }}
+                        >
+                            {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </Typography>
+                    ))}
+                </Box>
+                {/* ปุ่มยกเลิก/ล้างไฟล์ */}
+                <Button 
+                    onClick={handleClearFiles} 
+                    color="error" 
+                    size="small" 
+                    startIcon={<MdClear />}
+                    sx={{ mt: 1, textTransform: 'none' }}
+                >
+                    ยกเลิกการเลือก {files.length} ไฟล์
+                </Button>
             </Box>
         );
     };
@@ -111,8 +136,12 @@ function UploadImage({ user }) {
                 <Typography variant="h4" component="h2" sx={{ fontWeight: 700, mb: 1, color: theme.palette.primary.dark }}>
                     อัปโหลดไฟล์
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 3, color: theme.palette.text.secondary }}>
+                <Typography variant="body1" sx={{ mb: 1, color: theme.palette.text.secondary }}>
                     ลากไฟล์มาวางที่นี่ หรือ คลิกเพื่อเลือกไฟล์
+                </Typography>
+                {/* ✅ คำอธิบายที่แก้ไขใหม่ */}
+                <Typography variant="caption" sx={{ mb: 3, display: 'block', color: theme.palette.text.hint }}>
+                    *รองรับไฟล์รูปภาพทุกประเภท
                 </Typography>
 
                 {/* Drop Zone (MUI Styling) */}
@@ -122,10 +151,10 @@ function UploadImage({ user }) {
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={onDropZoneClick}
+                    onClick={files.length === 0 ? onDropZoneClick : undefined} 
                     sx={{
                         border: `2px dashed ${isDragging ? theme.palette.secondary.main : theme.palette.primary.main}`,
-                        backgroundColor: isDragging ? theme.palette.primary.light : 'rgba(0, 174, 239, 0.05)', // Light Blue Tint
+                        backgroundColor: isDragging ? theme.palette.action.hover : theme.palette.background.default, 
                         borderRadius: 2,
                         minHeight: 180,
                         display: 'flex',
@@ -143,6 +172,7 @@ function UploadImage({ user }) {
                         onChange={handleFileSelect} 
                         ref={fileInputRef}
                         style={{ display: 'none' }} 
+                        // หากต้องการจำกัดเฉพาะรูปภาพ สามารถเพิ่ม accept="image/*" ได้
                         multiple 
                     />
                     
@@ -155,7 +185,7 @@ function UploadImage({ user }) {
                 <Button
                     onClick={handleUpload}
                     variant="contained"
-                    color="primary" // Primary Main (#00AEEF)
+                    color="primary" 
                     disabled={files.length === 0} 
                     fullWidth
                     sx={{

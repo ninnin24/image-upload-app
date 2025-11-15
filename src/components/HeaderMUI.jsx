@@ -1,4 +1,4 @@
-
+// HeaderMUI.js
 import React from 'react';
 import { AppBar, Toolbar, Button, Box, Typography, Link as MuiLink } from '@mui/material';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -6,11 +6,11 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const NO_HEADER_PATHS = ['/login', '/register', '/forgot-password'];
 const fileFlowColors = {
-    primary: { dark: "#005377", main: "#00AEEF", light: "#87CEEB" }, 
+    primary: { dark: "#005377", main: "#00AEEF", light: "#87CEEB" },
     secondary: { dark: "#2CA3A3", main: "#40E0D0", light: "#AEEEEE" },
     accent: { main: "#FF7F50", light: "#FFB092" },
     text: { primary: "#003F5C" },
-    background: { default: "#E0F7FA" }, 
+    background: { default: "#E0F7FA" },
 };
 
 const theme = createTheme({
@@ -20,6 +20,15 @@ const theme = createTheme({
         secondary: { main: fileFlowColors.secondary.main, light: fileFlowColors.secondary.light },
         warning: { main: fileFlowColors.accent.main, light: fileFlowColors.accent.light },
         text: { primary: fileFlowColors.text.primary },
+    },
+    // ✅ เพิ่ม mixins.toolbar เพื่อให้ UserDashboard อ้างอิงความสูง Header ได้ง่าย
+    mixins: {
+        toolbar: {
+            minHeight: 64, // ค่าเริ่มต้นสำหรับ xs
+            '@media (min-width:600px)': {
+                minHeight: 72, // ค่าเริ่มต้นสำหรับ md
+            },
+        },
     },
 });
 
@@ -35,18 +44,18 @@ function HeaderMUI({ user, onLogout }) {
     const homePath = isAdmin ? '/admin/dashboard' : user ? '/user/dashboard' : '/';
 
     const renderMenu = () => {
-        const baseProps = { 
-            sx: { 
-                color: 'white', 
+        const baseProps = {
+            sx: {
+                color: 'white',
                 fontWeight: 600,
-                fontSize: '1.05rem', 
-                padding: '0.8rem 1rem', 
-                '&:hover': { 
+                fontSize: '1.05rem',
+                padding: '0.8rem 1rem',
+                '&:hover': {
                     color: theme.palette.secondary.light,
                     backgroundColor: 'rgba(255, 255, 255, 0.15)',
                     borderRadius: '4px'
-                } 
-            } 
+                }
+            }
         };
         const menuItems = !user
             ? [
@@ -57,26 +66,26 @@ function HeaderMUI({ user, onLogout }) {
                 { to: "/about", label: "เกี่ยวกับเรา" }
             ]
             : isAdmin
-            ? [
-                { to: "/admin/dashboard", label: "แดชบอร์ดผู้ดูแลระบบ" },
-                { to: "/admin/users", label: "จัดการผู้ใช้" },
-                { to: "/admin/files", label: "จัดการไฟล์" },
+                ? [
+                    { to: "/admin/dashboard", label: "แดชบอร์ดผู้ดูแลระบบ" },
+                    { to: "/admin/users", label: "จัดการผู้ใช้" },
+                    { to: "/admin/files", label: "จัดการไฟล์" },
 
-            ]
-            : [
-                { to: "/user/dashboard", label: "หน้าหลัก" },
-                { to: "/upload", label: "อัปโหลดไฟล์" },
-                { to: "/my-list", label: "รายการของฉัน" },
-                { to: "/contact", label: "ติดต่อเรา" }
-            ];
+                ]
+                : [
+                    { to: "/user/dashboard", label: "หน้าหลัก" },
+                    { to: "/upload", label: "อัปโหลดไฟล์" },
+                    { to: "/my-list", label: "รายการของฉัน" },
+                    { to: "/contact", label: "ติดต่อเรา" }
+                ];
 
         return (
             <Box sx={{ display: 'flex', gap: 1 }}>
                 {menuItems.map((item, index) => (
-                    <Button 
+                    <Button
                         key={index}
-                        {...baseProps} 
-                        component={item.to ? Link : MuiLink} 
+                        {...baseProps}
+                        component={item.to ? Link : MuiLink}
                         to={item.to}
                         href={item.href}
                     >
@@ -89,47 +98,47 @@ function HeaderMUI({ user, onLogout }) {
 
     return (
         <ThemeProvider theme={theme}>
-            <AppBar 
-                position="sticky" 
-                elevation={0} // ✅ ยืนยันว่าไม่มี elevation
+            <AppBar
+                position="fixed" // ⚡️⚡️⚡️ เปลี่ยนเป็น "fixed" ที่นี่ ⚡️⚡️⚡️
+                elevation={0}
                 sx={{
-                    background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, #004060 100%)`, 
+                    background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, #004060 100%)`,
                     color: 'white',
                     zIndex: 1100,
                     padding: 0,
-                    position: 'relative', 
-                    height: { xs: '64px', md: '72px' } 
+                    // ✅ ลบ position: 'relative' ออก
+                    // ✅ ไม่ต้องกำหนด height ตรงนี้โดยตรงแล้ว เพราะ Toolbar จะกำหนด minHeight ให้
                 }}
             >
-                <Toolbar disableGutters sx={{ 
-                    justifyContent: 'flex-start', 
-                    alignItems: 'stretch', 
+                <Toolbar disableGutters sx={{
+                    justifyContent: 'flex-start',
+                    alignItems: 'stretch',
                     width: '100%',
-                    minHeight: '100%',
-                    position: 'relative',
-                    boxShadow: 'none', // ✅ ยืนยันว่าไม่มี boxShadow
+                    // minHeight ถูกกำหนดใน theme.mixins.toolbar แล้ว
+                    boxShadow: 'none',
+                    // ✅ ลบ position: 'relative' ออกจาก Toolbar ด้วย
                 }}>
-                    
+
                     {/* 1. Logo Area - ข้อความ FileFlowz */}
-                    <Box 
-                        onClick={() => navigate(homePath)} 
-                        sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                    <Box
+                        onClick={() => navigate(homePath)}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
                             cursor: 'pointer',
                             transition: 'transform 0.3s',
-                            padding: { xs: '0 16px', md: '0 2rem' } 
+                            padding: { xs: '0 16px', md: '0 2rem' }
                         }}
                     >
-                        <Typography 
-                            variant="h6" 
+                        <Typography
+                            variant="h6"
                             sx={{
-                                fontWeight: 700, 
-                                color: theme.palette.secondary.light, 
+                                fontWeight: 700,
+                                color: theme.palette.secondary.light,
                                 lineHeight: 1,
-                                fontSize: '1.5rem', 
-                                '&:hover': { 
-                                    color: theme.palette.secondary.main, 
+                                fontSize: '1.5rem',
+                                '&:hover': {
+                                    color: theme.palette.secondary.main,
                                 }
                             }}
                         >
@@ -138,19 +147,19 @@ function HeaderMUI({ user, onLogout }) {
                     </Box>
 
                     {/* 2. Navigation Menu และ User Actions */}
-                    <Box sx={{ 
-                        flexGrow: 1, 
+                    <Box sx={{
+                        flexGrow: 1,
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: { xs: '0 16px', md: '0 2rem 0 0' } 
+                        padding: { xs: '0 16px', md: '0 2rem 0 0' }
                     }}>
-                        
+
                         {/* 🚀 Navigation Menu: จัดให้อยู่กึ่งกลางของพื้นที่ว่างที่เหลือ */}
-                        <Box sx={{ 
+                        <Box sx={{
                             display: { xs: 'none', md: 'flex' },
-                            flexGrow: 1, 
-                            justifyContent: 'center', 
+                            flexGrow: 1,
+                            justifyContent: 'center',
                         }}>
                             {renderMenu()}
                         </Box>
@@ -164,10 +173,10 @@ function HeaderMUI({ user, onLogout }) {
                                     </Typography>
                                     <Button
                                         variant="contained"
-                                        color="warning" 
+                                        color="warning"
                                         onClick={onLogout}
-                                        sx={{ 
-                                            fontWeight: 700, 
+                                        sx={{
+                                            fontWeight: 700,
                                             color: 'white',
                                             borderRadius: '10px',
                                             padding: '0.6rem 1.25rem',
@@ -184,8 +193,8 @@ function HeaderMUI({ user, onLogout }) {
                                     variant="contained"
                                     color="secondary"
                                     onClick={() => navigate('/login')}
-                                    sx={{ 
-                                        fontWeight: 700, 
+                                    sx={{
+                                        fontWeight: 700,
                                         color: theme.palette.text.primary,
                                         borderRadius: '10px',
                                         padding: '0.6rem 1.25rem',

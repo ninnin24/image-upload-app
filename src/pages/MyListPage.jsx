@@ -14,17 +14,36 @@ import {
   IconButton, 
   Alert,
   Tooltip,
+  useTheme,
+  // ✅ เพิ่ม Components สำหรับ Filter
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  TextField
 } from '@mui/material';
 
 import FolderIcon from '@mui/icons-material/Folder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+// ✅ นำ DateRangeIcon กลับมาใช้ใน TextField เพื่อแก้ warning
+import DateRangeIcon from '@mui/icons-material/DateRange'; 
 
 function MyListPage({ user }) {
+  const theme = useTheme();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); 
   const [selectedFiles, setSelectedFiles] = useState(new Set());
+  
+  // 🚀 State สำหรับการ Filter
+  const [fileType, setFileType] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const effectiveHeaderHeight = theme.spacing(10); 
+  
+  // -------------------- Data Fetching --------------------
 
   useEffect(() => {
     if (user) {
@@ -32,7 +51,11 @@ function MyListPage({ user }) {
       setError(null);
       axios.get('/user/files', { withCredentials: true })
         .then(res => {
-          setFiles(res.data);
+          const processedFiles = res.data.map(file => ({
+            ...file,
+            size: file.filesize_bytes || file.size || 0 
+          }));
+          setFiles(processedFiles);
           setError(null);
         })
         .catch(() => {
@@ -42,6 +65,8 @@ function MyListPage({ user }) {
         .finally(() => setLoading(false));
     }
   }, [user]);
+
+  // -------------------- Handlers --------------------
 
   const handleSelectFile = (fileId) => {
     setSelectedFiles(prevSelected => {
@@ -79,14 +104,32 @@ function MyListPage({ user }) {
     }
   };
 
+  const handleResetFilter = () => {
+    setFileType('all');
+    setStartDate('');
+    setEndDate('');
+    // 💡 ในการใช้งานจริง, คุณต้องเรียกฟังก์ชัน fetchFiles(resetParams) ที่นี่
+    alert('ทำการรีเซ็ตตัวกรองแล้ว');
+  };
 
-  const formatFileSize = (bytes) => (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  // -------------------- Formatters --------------------
+
+  const formatFileSize = (bytes) => {
+    if (typeof bytes !== 'number' || bytes < 0) return 'N/A';
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  }
   const formatDate = (dateString) => new Date(dateString).toLocaleString('th-TH');
 
 
+  // -------------------- Render Logic --------------------
+
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: 'center', py: 5 }}>
+      <Container maxWidth="md" sx={{ 
+          textAlign: 'center', 
+          py: 5,
+          paddingTop: effectiveHeaderHeight 
+      }}>
         <CircularProgress />
         <Typography variant="body1" sx={{ mt: 2 }}>กำลังโหลดไฟล์...</Typography>
       </Container>
@@ -94,7 +137,15 @@ function MyListPage({ user }) {
   }
   
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container 
+      maxWidth="lg" 
+      sx={{ 
+        paddingTop: effectiveHeaderHeight,
+        mt: 4, 
+        mb: 4 
+      }}
+    >
+      {/* 1. Header และปุ่มลบไฟล์ */}
       <Box 
         sx={{ 
           display: 'flex', 
@@ -112,9 +163,82 @@ function MyListPage({ user }) {
           color="error" 
           onClick={handleDeleteSelected}
           disabled={selectedFiles.size === 0}
-          startIcon={<DeleteIcon />} // ⭐️ เพิ่ม Icon
+          startIcon={<DeleteIcon />} 
         >
           ลบไฟล์ที่เลือก ({selectedFiles.size})
+        </Button>
+      </Box>
+      
+      {/* 2. Filter / Search Bar */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          alignItems: 'center', 
+          p: 2, 
+          mb: 4, 
+          bgcolor: theme.palette.primary.light, 
+          borderRadius: 1,
+          boxShadow: 1
+        }}
+      >
+        {/* 2.1. Dropdown ประเภทบริษัท/ไฟล์ */}
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+          <InputLabel id="file-type-label">ประเภทไฟล์</InputLabel>
+          <Select
+            labelId="file-type-label"
+            value={fileType}
+            onChange={(e) => setFileType(e.target.value)}
+            label="ประเภทไฟล์"
+            sx={{ bgcolor: 'white' }}
+          >
+            <MenuItem value="all">
+              <em>ทั้งหมด</em>
+            </MenuItem>
+            <MenuItem value="doc">เอกสาร</MenuItem>
+            <MenuItem value="image">รูปภาพ</MenuItem>
+            <MenuItem value="pdf">PDF</MenuItem>
+            <MenuItem value="other">อื่นๆ</MenuItem>
+          </Select>
+        </FormControl>
+        
+        {/* 2.2. วันที่เริ่มต้น */}
+        <TextField
+          label="วัน/เดือน/ปี เริ่มต้น"
+          type="date"
+          size="small"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          sx={{ bgcolor: 'white' }}
+          // ใช้งาน DateRangeIcon 
+          InputProps={{
+              startAdornment: <DateRangeIcon fontSize="small" color="action" sx={{ mr: 1 }} />
+          }}
+        />
+
+        {/* 2.3. วันที่สิ้นสุด */}
+        <TextField
+          label="วัน/เดือน/ปี สิ้นสุด"
+          type="date"
+          size="small"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          sx={{ bgcolor: 'white' }}
+          // ใช้งาน DateRangeIcon
+          InputProps={{
+              startAdornment: <DateRangeIcon fontSize="small" color="action" sx={{ mr: 1 }} />
+          }}
+        />
+        
+        {/* 2.4. ปุ่ม "รีเซ็ต/ค้นหา" */}
+        <Button 
+          variant="contained" 
+          onClick={handleResetFilter} 
+          sx={{ height: '40px' }} 
+        >
+          รีเซ็ต
         </Button>
       </Box>
 
@@ -133,7 +257,7 @@ function MyListPage({ user }) {
             <ListItem 
               key={file.id} 
               secondaryAction={
-           
+              
                 <Tooltip title="ดูไฟล์">
                   <IconButton 
                     edge="end" 
@@ -149,7 +273,7 @@ function MyListPage({ user }) {
               divider 
               sx={{ '&:hover': { bgcolor: 'action.hover' } }}
             >
-             
+              
               <ListItemIcon>
                 <Checkbox
                   edge="start"
@@ -160,7 +284,7 @@ function MyListPage({ user }) {
                   color="primary"
                 />
               </ListItemIcon>
-           
+            
               <ListItemText
                 primary={
                   <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
@@ -173,7 +297,7 @@ function MyListPage({ user }) {
                       อัปโหลด: {formatDate(file.uploaded_at)}
                     </Typography>
                     <Typography component="span" variant="caption" color="text.secondary">
-                      ขนาด: {formatFileSize(file.filesize_bytes)}
+                      ขนาด: {formatFileSize(file.size)}
                     </Typography>
                   </Box>
                 }

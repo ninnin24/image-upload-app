@@ -1,4 +1,3 @@
-// HomeDashboard.jsx (ตำแหน่ง: src/pages/)
 
 import React from "react";
 import { useNavigate, Navigate } from "react-router-dom";
