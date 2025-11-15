@@ -115,3 +115,38 @@
     color: #888;
     margin-top: 0.5rem;
 }
+
+.date-picker-input {
+    width: 100%; /* หรือ 150px ตามความเหมาะสม */
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* สำคัญ */
+    text-align: center;
+}
+
+/* ทำให้ปฏิทินที่เด้งออกมาอยู่เหนือรายการ */
+.react-datepicker-popper {
+    z-index: 10; 
+}
+
+.react-datepicker__current-month {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #121b23 !important;  /* ถ้าต้องการเปลี่ยนสี */
+  text-align: center !important;
+}
+
+/* ปรับ dropdown เดือน/ปี */
+.react-datepicker__month-select,
+.react-datepicker__year-select {
+  font-size: 1rem !important;
+  padding: 6px !important;
+}
+
+/* ปรับ header ทั้งกล่อง */
+.react-datepicker__header {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+

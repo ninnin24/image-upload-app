@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import '../styles/Dashboard.css'; 
 
-// ⭐️ (แนะนำ) Import CSS สำหรับปุ่มแบ่งหน้า
+// --- 1. Import Libs ที่เพิ่มเข้ามา ---
+import Select from 'react-select';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // CSS ของปฏิทิน
+
+import '../styles/Dashboard.css'; 
 import '../styles/Pagination.css'; 
 
 const AllFilesAudit = () => {
@@ -12,14 +16,13 @@ const AllFilesAudit = () => {
   
   const [filter, setFilter] = useState({
     company: '',
-    startDate: '',
-    endDate: ''
+    startDate: null,
+    endDate: null    
   });
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
-  // --- ⭐️ 1. เพิ่ม State สำหรับการแบ่งหน้า ---
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // ⬅️ กำหนดให้แสดง 10 ไฟล์ต่อหน้า
+  const itemsPerPage = 10; 
 
   // ดึงไฟล์ทั้งหมด
   useEffect(() => {
@@ -37,7 +40,6 @@ const AllFilesAudit = () => {
     fetchFiles();
   }, []);
 
-  // ฟอร์แมตขนาดไฟล์
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 Bytes';
     const k = 1024;
@@ -46,7 +48,6 @@ const AllFilesAudit = () => {
     return (bytes/Math.pow(k,i)).toFixed(2) + ' ' + sizes[i];
   };
 
-  // จัดการ Checkbox
   const handleSelectFile = (fileId) => {
     setSelectedFiles(prevSelected => {
       const newSelected = new Set(prevSelected);
@@ -81,28 +82,39 @@ const AllFilesAudit = () => {
   };
 
   // ตัวกรองไฟล์ (Client-side)
-  const filteredFiles = files.filter(file => {
-    const matchCompany = filter.company ? file.company_name === filter.company : true;
-    const matchStart = filter.startDate ? new Date(file.created_at) >= new Date(filter.startDate) : true;
-    const matchEnd = filter.endDate ? new Date(file.created_at) <= new Date(filter.endDate) : true;
-    return matchCompany && matchStart && matchEnd;
-  });
+  const filteredFiles = useMemo(() => {
+    // 3. 👈 แก้ไข Logic กรองวันที่ (ลบ new Date())
+    return files.filter(file => {
+      const matchCompany = filter.company ? file.company_name === filter.company : true;
+      const matchStart = filter.startDate ? new Date(file.created_at) >= filter.startDate : true;
+      const matchEnd = filter.endDate ? new Date(file.created_at) <= filter.endDate : true;
+      return matchCompany && matchStart && matchEnd;
+    });
+  }, [files, filter]);
 
-  // รายชื่อบริษัทไม่ซ้ำ สำหรับ dropdown
-  const companies = [...new Set(files.map(f => f.company_name))];
 
-  // --- ⭐️ 2. คำนวณ Logic การแบ่งหน้า ---
+  // 4. 👈 สร้าง Options สำหรับ react-select (บริษัท)
+  const companyOptions = useMemo(() => {
+    const companies = [...new Set(files.map(f => f.company_name))];
+    const options = companies.map(c => ({
+      value: c,
+      label: c
+    }));
+    // เพิ่ม "ดูทุกบริษัท" เข้าไป
+    return [{ value: '', label: 'ดูทุกบริษัท' }, ...options];
+  }, [files]);
+
+
+  // Logic การแบ่งหน้า
   const totalPages = Math.ceil(filteredFiles.length / itemsPerPage);
   const lastIndex = currentPage * itemsPerPage;
   const firstIndex = lastIndex - itemsPerPage;
-  
-  // ⭐️ ได้ไฟล์เฉพาะหน้าปัจจุบัน
   const currentFiles = filteredFiles.slice(firstIndex, lastIndex); 
 
   // ฟังก์ชันสำหรับเปลี่ยนหน้า
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    setSelectedFiles(new Set()); // ⭐️ เคลียร์ Checkbox เมื่อเปลี่ยนหน้า
+    setSelectedFiles(new Set()); 
   };
   
   // ฟังก์ชันสำหรับสร้างปุ่มตัวเลข
@@ -129,30 +141,60 @@ const AllFilesAudit = () => {
     <div className="admin-content-box">
       <h3>📁 ดูไฟล์ทั้งหมด ({filteredFiles.length})</h3>
 
-      {/* Filter Controls (เหมือนเดิม) */}
-      <div className="filter-controls">
-        <select
-          value={filter.company}
-          onChange={e => setFilter({ ...filter, company: e.target.value })}
-        >
-          <option value="">ดูทุกบริษัท</option>
-          {companies.map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={filter.startDate}
-          onChange={e => setFilter({ ...filter, startDate: e.target.value })}
+      {/* --- 5. 👈 แก้ไข Filter Controls ทั้งหมด --- */}
+      <div className="filter-controls" style={{ display: 'flex', gap: '15px' }}>
+        
+        <div style={{ minWidth: '200px' }}>
+          <Select
+            options={companyOptions}
+            value={companyOptions.find(opt => opt.value === filter.company)}
+            onChange={selectedOption => 
+              setFilter({ ...filter, company: selectedOption.value })
+            }
+            instanceId="company-select"
+            placeholder="เลือกบริษัท..."
+          />
+        </div>
+
+        <DatePicker
+          selected={filter.startDate}
+          onChange={date => setFilter({ ...filter, startDate: date })}
+          selectsStart
+          startDate={filter.startDate}
+          endDate={filter.endDate}
+          placeholderText="วว/ดด/ปปปป (เริ่ม)"
+          isClearable
+          dateFormat="dd/MM/yyyy"
+          className="date-picker-input"
+          // --- ⭐️ เพิ่ม 3 บรรทัดนี้ ---
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
+          // --- ⭐️ สิ้นสุด ---
         />
-        <input
-          type="date"
-          value={filter.endDate}
-          onChange={e => setFilter({ ...filter, endDate: e.target.value })}
+        <DatePicker
+          selected={filter.endDate}
+          onChange={date => setFilter({ ...filter, endDate: date })}
+          selectsEnd
+          startDate={filter.startDate}
+          endDate={filter.endDate}
+          minDate={filter.startDate} 
+          placeholderText="วว/ดด/ปปปป (สิ้นสุด)"
+          isClearable
+          dateFormat="dd/MM/yyyy"
+          className="date-picker-input"
+          // --- ⭐️ เพิ่ม 3 บรรทัดนี้ ---
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
+          // --- ⭐️ สิ้นสุด ---
         />
-        <button onClick={() => setFilter({ company:'', startDate:'', endDate:'' })}>
+
+        {/* 6. 👈 แก้ไขปุ่ม Reset */}
+        <button onClick={() => setFilter({ company:'', startDate: null, endDate: null })}>
           รีเซ็ต
         </button>
+        
         <button 
           className="delete-selected-btn"
           onClick={handleDeleteSelected}
@@ -162,6 +204,8 @@ const AllFilesAudit = () => {
           [Admin] ลบไฟล์ที่เลือก ({selectedFiles.size})
         </button>
       </div>
+      {/* --- จบส่วน Filter Controls --- */}
+
 
       {/* File List (ตาราง) */}
       <table className="files-table">
@@ -178,14 +222,14 @@ const AllFilesAudit = () => {
         </thead>
         <tbody>
           
-          {/* ⭐️ 3. แก้ไข: map จาก 'currentFiles' (ไม่ใช่ 'filteredFiles') */}
           {currentFiles.length === 0 ? (
             <tr>
               <td colSpan="7" style={{ textAlign: 'center' }}>ไม่พบไฟล์ที่ตรงกับเงื่อนไข</td>
             </tr>
           ) : (
-            currentFiles.map(f => (
-              <tr key={f.id}>
+            // 7. 👈 แก้ไข key prop
+            currentFiles.map((f, index) => (
+              <tr key={`${f.id}-${index}`}> 
                 <td>
                   <input
                     type="checkbox"
@@ -199,8 +243,9 @@ const AllFilesAudit = () => {
                 <td>{formatFileSize(f.file_size_bytes)}</td>
                 <td>{new Date(f.created_at).toLocaleString('th-TH')}</td>
                 <td>
+                  {/* 8. 👈 แก้ไข URL (href) */}
                   <a 
-                    href={`http://172.18.20.45:8080/files/download?id=${f.id}`} 
+                    href={`/files/download?id=${f.id}`} 
                     className="file-action-btn view-btn"
                     target="_blank" 
                     rel="noopener noreferrer"
@@ -214,7 +259,7 @@ const AllFilesAudit = () => {
         </tbody>
       </table>
 
-      {/* ⭐️ 4. เพิ่ม: ส่วนควบคุมการแบ่งหน้า */}
+      {/* ส่วนควบคุมการแบ่งหน้า */}
       {totalPages > 1 && (
         <div className="pagination-controls">
           <button
