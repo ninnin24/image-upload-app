@@ -1,117 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // ⭐️ 1. Import Link
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { VscHistory, VscCloudUpload, VscCloudDownload, VscTrash, VscEdit, VscFile } from "react-icons/vsc";
-import '../styles/DashboardSummary.css';
+// ⭐️ 1. ลบ imports ที่ไม่ได้ใช้ออก (BarChart, Link)
+import { useNavigate } from 'react-router-dom';
+
+// ⭐️ 2. API_URL (ถูกต้องแล้ว)
+const API_URL = 'http://172.18.20.45:8080';
 
 const DashboardSummary = () => {
-    const [summary, setSummary] = useState({ companies: 0, users: 0, files: 0 });
-    const [recentActivity, setRecentActivity] = useState([]);
+  const [summary, setSummary] = useState({ companies: 0, users: 0, files: 0 });
+  const [recentFiles, setRecentFiles] = useState([]);
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        // API สำหรับ Summary
-        axios.get('http://172.18.20.45:8080/admin/summary', { withCredentials: true })
-            .then(res => {
-                const data = res.data;
-                setSummary({
-                    companies: data.total_companies,
-                    users: data.total_users,
-                    files: data.total_files,
-                });
-            })
-            .catch(err => console.error(err));
+  const navigate = useNavigate(); 
 
-        // API สำหรับดึง Activity Log (ยังคงดึงแค่ 2 รายการสำหรับหน้า dashboard)
-        axios.get('http://172.18.20.45:8080/admin/files', { withCredentials: true })
-            .then(res => setRecentActivity(res.data.slice(0, 3)))
-            .catch(err => console.error(err));
-    }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    const formatDate = date => new Date(date).toLocaleString();
+      try {
+        const [summaryRes, filesRes] = await Promise.all([
+          axios.get(`${API_URL}/admin/summary`, { withCredentials: true }),
+          axios.get(`${API_URL}/admin/files`, { withCredentials: true })
+        ]);
 
-    // --- ฟังก์ชันสำหรับ Activity Log (แก้ไข Case) ---
-    const formatActionType = (action) => {
-        switch (action) {
-            case 'UPLOAD': return 'อัปโหลดไฟล์';
-            case 'DOWNLOAD': return 'ดาวน์โหลดไฟล์';
-            case 'DELETE': return 'ลบไฟล์';
-            case 'EDIT': return 'แก้ไขข้อมูล';
-            default: return 'ดำเนินการ (' + action + ')';
+        setSummary(summaryRes.data);
+        setRecentFiles(filesRes.data.slice(0, 5)); // ⭐️ ใช้ recentFiles
+
+      } catch (err) {
+        console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", err);
+
+        if (err.response && err.response.status === 401) {
+          alert('เซสชันของคุณหมดอายุ หรือไม่มีสิทธิ์เข้าถึง กรุณาล็อกอินใหม่');
+          navigate('/login');
+        } else if (err.response && err.response.status === 404) {
+          setError('ไม่พบ API Endpoint (404)');
+        } else {
+          setError('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
         }
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const getActionIcon = (action) => {
-        switch (action) {
-            case 'UPLOAD': return <VscCloudUpload size={20} style={{ color: '#007bff' }} />;
-            case 'DOWNLOAD': return <VscCloudDownload size={20} style={{ color: '#28a745' }} />;
-            case 'DELETE': return <VscTrash size={20} style={{ color: '#dc3545' }} />;
-            case 'EDIT': return <VscEdit size={20} style={{ color: '#ffc107' }} />;
-            default: return <VscFile size={20} />;
-        }
-    };
+    fetchData();
+  }, [navigate]); 
 
-    // --- ⭐️ ข้อมูลกราฟ (นำกลับมา) ---
-    const chartData = [
-        { name: 'บริษัท', value: summary.companies },
-        { name: 'ผู้ใช้', value: summary.users },
-        { name: 'ไฟล์', value: summary.files },
-    ];
+  // --- (ฟังก์ชัน format) ---
+  const formatDate = date => new Date(date).toLocaleString();
+  const formatFileSize = bytes => {
+    if (!bytes) return '0 Bytes';
+    const k = 1024, s = ['Bytes', 'KB', 'MB', 'GB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + s[i];
+  };
 
-    return (
-        <div className="dashboard-summary-container">
+  // --- (ส่วนแสดงผล Loading/Error) ---
+  if (isLoading) {
+    return <div className="admin-content-box">กำลังโหลดข้อมูล...</div>;
+  }
 
-            {/* --- ⭐️ ส่วนกราฟ (โค้ดเดิมของคุณ) --- */}
-            <div className="summary-graph-box">
-                <h3>ภาพรวมระบบ</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#007bff" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+  if (error) {
+    return <div className="admin-content-box" style={{ color: 'red' }}>{error}</div>;
+  }
 
-            {/* --- ส่วน Activity Log (โค้ดที่แก้ไขแล้ว) --- */}
-            <div className="admin-content-box">
-
-                {/* ⭐️ 2. แก้ไขส่วนหัว H3 ให้มี Link "ดูทั้งหมด" */}
-                <div className="admin-box-header">
-                    <h3><VscHistory size={20} style={{ marginRight: '8px' }} />กิจกรรมล่าสุด</h3>
-                    <Link to="/admin/activities" className="view-all-link">
-                        ดูทั้งหมด
-                    </Link>
-                </div>
-                {/* ---------------------------------------- */}
-
-                {recentActivity.length === 0 ? (
-                    <p>ยังไม่มีกิจกรรม</p>
-                ) : (
-                    recentActivity.map(log => (
-                        <div key={log.id} className="timeline-item-activity">
-                            <div className="timeline-icon">
-                                {getActionIcon(log.action_type)}
-                            </div>
-                            <div className="timeline-content">
-                                <strong>{formatActionType(log.action_type)}</strong>
-                                <p>ไฟล์: {log.file_name}</p>
-                                <p>
-                                    โดย: <strong className="highlight-username">{log.username || 'ไม่ระบุ'}</strong>
-                                    (บริษัท: {log.company_name})
-                                </p>
-                                <p className="timeline-timestamp">
-                                    เวลา: {formatDate(log.created_at)}
-                                </p>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+  // --- ⭐️ 3. นี่คือ return ที่ถูกต้อง (มีแค่ 1 อัน) ---
+  return (
+    <>
+      <div className="summary-cards-container">
+        <div className="summary-card primary">
+          <h4>รวมจำนวนบริษัท</h4>
+          <p>{summary.companies}</p>
         </div>
-    );
-};
+        <div className="summary-card secondary">
+          <h4>รวมจำนวนผู้ใช้ทั้งหมด</h4>
+          <p>{summary.users}</p>
+        </div>
+        <div className="summary-card tertiary">
+          <h4>รวมจำนวนไฟล์ทั้งหมด</h4>
+          <p>{summary.files}</p>
+        </div>
+      </div>
+
+      <div className="admin-content-box">
+        <h3>📄 ไฟล์ล่าสุด</h3>
+        {recentFiles.length === 0 ? <p>ยังไม่มีไฟล์อัปโหลด</p> :
+          recentFiles.map(f => (
+            <div key={f.id} className="timeline">
+              <div className="timeline-item">
+                <strong>{f.filename}</strong>
+                <p>บริษัท: {f.company_name}</p>
+                <p>อัปโหลด: {formatDate(f.uploaded_at)}</p>
+                <p>ขนาดไฟล์: {formatFileSize(f.filesize_bytes)}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </> 
+  ); 
+}; 
 
 export default DashboardSummary;

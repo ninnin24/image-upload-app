@@ -1,5 +1,6 @@
-import React, { useState } from 'react'; // ⭐️ 1. ลบ useEffect ออก
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // 1. ใช้ axios
 import '../styles/LoginPage.css';
 import HappySoftLogo from '../assets/fileflowz2.png';
 
@@ -27,7 +28,7 @@ function LoginPage({ setUser, isRegister = false }) {
                 credentials: 'include',
             });
 
-            const data = await response.json();
+            const { role } = response.data;
 
             if (response.ok) {
                 const { role } = data;
@@ -38,11 +39,17 @@ function LoginPage({ setUser, isRegister = false }) {
                 } else {
                     navigate('/user/dashboard', { replace: true });
                 }
-            } else {
-                setError(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-            }
+            } 
+            window.location.reload();
+
         } catch (err) {
-            setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            if (err.response) {
+                setError(err.response.data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            } else if (err.request) {
+                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            } else {
+                setError('เกิดข้อผิดพลาดบางอย่าง');
+            }
         }
     };
 
@@ -71,7 +78,11 @@ function LoginPage({ setUser, isRegister = false }) {
                 setError(data.message || 'การลงทะเบียนล้มเหลว');
             }
         } catch (err) {
-            setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            if (err.response) {
+                setError(err.response.data.message || 'การลงทะเบียนล้มเหลว (อาจมีชื่อผู้ใช้นี้แล้ว)');
+            } else {
+                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            }
         }
     };
 
@@ -89,7 +100,7 @@ function LoginPage({ setUser, isRegister = false }) {
                             type="text"
                             id="username"
                             value={username}
-                            onChange={e => setUsername(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
@@ -100,7 +111,7 @@ function LoginPage({ setUser, isRegister = false }) {
                             type="password"
                             id="password"
                             value={password}
-                            onChange={e => setPassword(e.target.value)}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
