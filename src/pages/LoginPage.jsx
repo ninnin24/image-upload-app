@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // 1. ใช้ axios
+import axios from 'axios'; // 1. ใช้ axios (ถูกต้อง)
 import '../styles/LoginPage.css';
 import HappySoftLogo from '../assets/fileflowz2.png';
 
@@ -8,9 +8,9 @@ function LoginPage({ setUser, isRegister = false }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    // ⭐️ 4. แก้ไข isRegistering 
     const [isRegistering, setIsRegistering] = useState(isRegister);
     const navigate = useNavigate();
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -21,28 +21,35 @@ function LoginPage({ setUser, isRegister = false }) {
         }
 
         try {
-            const response = await fetch(`/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-                credentials: 'include',
-            });
+            // ⭐️ 1. เปลี่ยนจาก fetch มาใช้ axios.post
+            // axios จะส่ง JSON, จัดการ header, และ credentials ให้อัตโนมัติ (ถ้าตั้งค่า proxy หรือ default)
+            // หรือระบุ withCredentials: true ถ้าจำเป็น
+            const response = await axios.post('/login', 
+                { username, password },
+                { withCredentials: true } // ⭐️ 2. ส่ง cookie ไปด้วย
+            );
 
-            const { role } = response.data;
+            // ⭐️ 3. axios จะคืนข้อมูล data มาใน .data โดยตรง
+            const data = response.data;
+            const { role } = data; // ดึง role จาก data ที่ได้มา
 
-            if (response.ok) {
-                const { role } = data;
-                setUser(data); 
+            // ⭐️ 4. axios จะ throw error ถ้า response ไม่ใช่ 2xx
+            // ดังนั้นถ้ามาถึงตรงนี้ได้ คือ "สำเร็จ" (ไม่ต้องเช็ค response.ok)
+            
+            setUser(data); 
 
-                if (role === 'admin') {
-                    navigate('/admin/dashboard', { replace: true });
-                } else {
-                    navigate('/user/dashboard', { replace: true });
-                }
-            } 
-            window.location.reload();
+            if (role === 'admin') {
+                navigate('/admin/dashboard', { replace: true });
+            } else {
+                navigate('/user/dashboard', { replace: true });
+            }
+        
+            // ⭐️ 5. (สำคัญมาก) ลบ window.location.reload(); ทิ้ง
+            // การ reload จะทำลาย State ของ React ที่ setUser เพิ่งตั้งค่าไป
+            // navigate() คือวิธีที่ถูกต้องแล้ว
 
         } catch (err) {
+            // ⭐️ 6. Error handling ของ axios ถูกต้องแล้ว (ใช้ err.response)
             if (err.response) {
                 setError(err.response.data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
             } else if (err.request) {
@@ -63,21 +70,17 @@ function LoginPage({ setUser, isRegister = false }) {
         }
 
         try {
-            const response = await fetch(`/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
+            // ⭐️ 7. เปลี่ยน handleRegister ให้ใช้ axios ด้วย (เพื่อความสอดคล้อง)
+            await axios.post('/register', { username, password });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
-                setIsRegistering(false); 
-            } else {
-                setError(data.message || 'การลงทะเบียนล้มเหลว');
-            }
+            // ⭐️ 8. ถ้าไม่ Error (catch ไม่ทำงาน) คือสำเร็จ
+            alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
+            setIsRegistering(false); 
+            setUsername(''); // เคลียร์ฟอร์ม
+            setPassword(''); // เคลียร์ฟอร์ม
+            
         } catch (err) {
+            // ⭐️ 9. Error handling ของ axios
             if (err.response) {
                 setError(err.response.data.message || 'การลงทะเบียนล้มเหลว (อาจมีชื่อผู้ใช้นี้แล้ว)');
             } else {
