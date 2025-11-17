@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
@@ -9,33 +9,31 @@ function HomeDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // ✅ ดึงข้อมูล user จาก cookie
+  // ดึงข้อมูล user จาก cookie
   useEffect(() => {
-    axios.get('http://172.18.20.45:8080/auth/validate', { withCredentials: true })
-      .then(res => setUser(res.data))
+    axios
+      .get('/auth/validate', { withCredentials: true })
+      .then((res) => setUser(res.data))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
-  // ✅ ใช้ useCallback เพื่อป้องกัน ESLint warning
-  const fetchFiles = useCallback(async () => {
-    if (!user) return; // ป้องกันเรียกก่อน user ถูกโหลด
-
-    try {
-      let url = '';
-      if (user.role === 'ผู้ดูแลระบบ') url = 'http://172.18.20.45:8080/admin/files';
-      else url = 'http://172.18.20.45:8080/user/files';
-      const res = await axios.get(url, { withCredentials: true });
-      setFiles(res.data);
-    } catch {
-      setFiles([]);
-    }
-  }, [user]); // ✅ ระบุ dependency เป็น user เท่านั้น
-
-  // ✅ โหลดไฟล์หลังจาก user ถูกโหลด
+  // ดึงไฟล์ตาม role
   useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        let url = '';
+        if (user?.role === 'admin') url = '/admin/files';
+        else url = '/user/files';
+        const res = await axios.get(url, { withCredentials: true });
+        setFiles(res.data);
+      } catch {
+        setFiles([]);
+      }
+    };
+
     if (user) fetchFiles();
-  }, [user, fetchFiles]);
+  }, [user]); // ใช้แค่ user
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
@@ -44,18 +42,30 @@ function HomeDashboard() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', marginTop: '50px' }}>กำลังโหลดข้อมูล...</div>;
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        กำลังโหลดข้อมูล...
+      </div>
+    );
   }
 
   return (
     <div className="home-container">
       <header className="home-header">
-        <div className="home-logo" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
-          <span style={{ fontSize: '1.6em', fontWeight: 'bold' }}>FileFlowz</span>
+        <div
+          className="home-logo"
+          onClick={() => navigate('/home')}
+          style={{ cursor: 'pointer' }}
+        >
+          <span style={{ fontSize: '1.6em', fontWeight: 'bold' }}>
+            FileFlowz
+          </span>
         </div>
 
         <nav className="header-nav-center">
-          <Link to="/home" className="active">หน้าหลัก</Link>
+          <Link to="/home" className="active">
+            หน้าหลัก
+          </Link>
           <Link to="/uploadimage">อัปโหลดไฟล์</Link>
           <Link to="/my-list">รายการของฉัน</Link>
           <Link to="/about">เกี่ยวกับ</Link>
@@ -63,7 +73,9 @@ function HomeDashboard() {
 
         <div className="user-info">
           {user && <span>👤 {user.username}</span>}
-          <button className="sidebar-btn logout" onClick={handleLogout}>ออกจากระบบ</button>
+          <button className="sidebar-btn logout" onClick={handleLogout}>
+            ออกจากระบบ
+          </button>
         </div>
       </header>
 
@@ -84,7 +96,10 @@ function HomeDashboard() {
                   <strong>{file.filename}</strong>
                   <p>บริษัท: {file.company_name || 'ไม่ระบุ'}</p>
                   <p>อัปโหลดโดย: {file.uploader_name || 'ไม่ระบุ'}</p>
-                  <p>วันที่: {new Date(file.uploaded_at).toLocaleString()}</p>
+                  <p>
+                    วันที่:{' '}
+                    {new Date(file.uploaded_at).toLocaleString()}
+                  </p>
                 </div>
               </div>
             ))}
