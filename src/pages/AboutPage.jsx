@@ -9,8 +9,6 @@ function AboutPage() {
   return (
     <div className="about-page-wrapper">
       <Header />
-
-      {/* Hero Section */}
       <section className="hero">
         <h1>เกี่ยวกับ Happy Soft</h1>
         <p>ผู้นำด้านนวัตกรรมเทคโนโลยีที่มุ่งมั่นพัฒนาโซลูชันเพื่อขับเคลื่อนธุรกิจไทย</p>

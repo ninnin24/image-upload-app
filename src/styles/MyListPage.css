@@ -115,3 +115,78 @@
 .view-btn {
   background: var(--secondary-main);
 }
+
+/* --- ส่วนที่เพิ่มใหม่สำหรับ Controls Bar --- */
+
+.mylist-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  flex-wrap: wrap; /* รองรับจอเล็ก */
+  gap: 10px;
+}
+
+/* --- 1. ส่วน "เลือกทั้งหมด" (ฝั่งซ้าย) --- */
+.select-all-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-all-container label {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  -webkit-user-select: none; /* กันการเผลอ highilght */
+  user-select: none; /* กันการเผลอ highilght */
+}
+
+.select-all-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* --- 2. ส่วน "ปุ่มเรียงลำดับ" (ฝั่งขวา) --- */
+.sort-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-buttons span {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #555;
+  margin-right: 5px;
+}
+
+.sort-buttons button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  color: #333;
+}
+
+.sort-buttons button:hover {
+  background-color: #e7e7e7;
+  border-color: #bbb;
+}
+
+/* ปุ่มที่ถูก "เลือก" อยู่ */
+.sort-buttons button.active {
+  background-color: #e0e7ff; /* สีฟ้าอ่อน */
+  border-color: #007bff;
+  color: #0056b3;
+  font-weight: bold;
+}

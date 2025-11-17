@@ -1,32 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react'; // ⭐️ 1. เพิ่ม useMemo, useRef
 import axios from 'axios';
-// ⭐️ 1. ลบ Header (App.js จัดการแล้ว)
-// ⭐️ 2. (แนะนำ) Import CSS สำหรับหน้านี้
 import '../styles/MyListPage.css';
 
-// ⭐️ 3. รับ 'user' เป็น prop (App.js ส่งมาให้)
 function MyListPage({ user }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  // ⭐️ 4. เพิ่ม State สำหรับเก็บไฟล์ที่เลือก
   const [selectedFiles, setSelectedFiles] = useState(new Set());
+  
+  // ⭐️ 2. State สำหรับการเรียงลำดับ (Default: เรียงตามวันที่อัปโหลด, ใหม่สุดมาก่อน)
+  const [sortConfig, setSortConfig] = useState({ 
+    key: 'uploaded_at', 
+    order: 'desc' 
+  });
+  
+  // ⭐️ 3. Ref สำหรับ Checkbox "เลือกทั้งหมด" (เพื่อตั้งค่า indeterminate)
+  const selectAllCheckboxRef = useRef(null);
 
-  // ⭐️ 5. แก้ไข useEffect: ลบ /auth/validate ออก (App.js ทำแล้ว)
   useEffect(() => {
-    // โหลดไฟล์เฉพาะเมื่อ 'user' (จาก prop) พร้อมใช้งาน
     if (user) {
       setLoading(true);
-      // ⭐️ 6. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
       axios.get('/user/files', { withCredentials: true })
         .then(res => setFiles(res.data))
         .catch(() => setFiles([]))
         .finally(() => setLoading(false));
     }
-  }, [user]); // ⭐️ ให้ re-run เมื่อ 'user' เปลี่ยน
+  }, [user]); 
 
-  // ⭐️ 7. ลบ handleLogout (App.js จัดการแล้ว)
+  // ⭐️ 4. (สำคัญ) ใช้ useMemo เพื่อคำนวณการเรียงลำดับ
+  // โค้ดส่วนนี้จะทำงานใหม่ *เฉพาะ* เมื่อ 'files' หรือ 'sortConfig' เปลี่ยน
+  const sortedFiles = useMemo(() => {
+    const sortableFiles = [...files]; // คัดลอก Array ก่อน
+    
+    if (sortConfig.key) {
+      sortableFiles.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
 
-  // ⭐️ 8. ฟังก์ชันสำหรับจัดการ Checkbox
+        // จัดการ String (ชื่อไฟล์) ให้เป็น case-insensitive
+        if (sortConfig.key === 'filename') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+
+        // ตรรกะการเรียง
+        if (aValue < bValue) {
+          return sortConfig.order === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.order === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableFiles;
+  }, [files, sortConfig]); // <-- ทำงานใหม่เมื่อ 2 ค่านี้เปลี่ยน
+
+  // ⭐️ 5. ฟังก์ชันสำหรับเปลี่ยนการเรียงลำดับ
+  const requestSort = (key) => {
+    let order = 'asc';
+    
+    // ถ้าคลิกคอลัมน์เดิม ให้สลับ 'asc' <-> 'desc'
+    if (sortConfig.key === key) {
+      order = sortConfig.order === 'asc' ? 'desc' : 'asc';
+    } else {
+      // ถ้าคลิกคอลัมน์ใหม่, ตั้งค่า default
+      if (key === 'uploaded_at') order = 'desc'; // วันที่ (ใหม่ -> เก่า)
+      else if (key === 'filename') order = 'asc'; // ชื่อ (A -> Z)
+      else if (key === 'file_size_bytes') order = 'desc'; // ขนาด (ใหญ่ -> เล็ก)
+    }
+    
+    setSortConfig({ key, order });
+  };
+
   const handleSelectFile = (fileId) => {
     setSelectedFiles(prevSelected => {
       const newSelected = new Set(prevSelected);
@@ -39,26 +84,41 @@ function MyListPage({ user }) {
     });
   };
 
-  // ⭐️ 9. ฟังก์ชันสำหรับลบไฟล์ที่เลือก
+  // ⭐️ 6. คำนวณสถานะ "เลือกทั้งหมด"
+  const allFileIds = sortedFiles.map(f => f.id);
+  const isAllSelected = sortedFiles.length > 0 && selectedFiles.size === sortedFiles.length;
+  // สถานะ "เลือกบางส่วน" (indeterminate)
+  const isIndeterminate = selectedFiles.size > 0 && !isAllSelected;
+
+  // ⭐️ 7. ฟังก์ชันสำหรับ Checkbox "เลือกทั้งหมด"
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedFiles(new Set()); // ถ้าเลือกทั้งหมดอยู่ -> ให้ยกเลิกทั้งหมด
+    } else {
+      setSelectedFiles(new Set(allFileIds)); // ถ้ายัง -> ให้เลือกทั้งหมด
+    }
+  };
+
+  // ⭐️ 8. (สำคัญ) Effect สำหรับตั้งค่า 'indeterminate' ของ Checkbox
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate = isIndeterminate;
+    }
+  }, [isIndeterminate]);
+
   const handleDeleteSelected = async () => {
     if (selectedFiles.size === 0) return;
-
     if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ ${selectedFiles.size} ไฟล์ที่เลือก?`)) {
       try {
-        // ⭐️ 10. เรียก API ใหม่ที่เราสร้างใน Go
         const res = await axios.post('/files/delete-multiple', 
-          { ids: [...selectedFiles] }, // ส่ง Array ของ ID
+          { ids: [...selectedFiles] }, 
           { withCredentials: true }
         );
-
         alert(res.data.message);
-
-        // ⭐️ 11. อัปเดต UI โดยลบไฟล์ที่ลบสำเร็จออกจาก State
         setFiles(prevFiles => 
           prevFiles.filter(file => !selectedFiles.has(file.id))
         );
-        setSelectedFiles(new Set()); // เคลียร์รายการที่เลือก
-        
+        setSelectedFiles(new Set());
       } catch (err) {
         console.error("Delete failed:", err);
         alert("เกิดข้อผิดพลาดในการลบไฟล์");
@@ -69,24 +129,65 @@ function MyListPage({ user }) {
   if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>กำลังโหลดไฟล์...</div>;
 
   return (
-    // ⭐️ 12. ลบ <div> ครอบและ <Header>
     <div className="mylist-container">
       <div className="mylist-header">
         <h2>📁 ไฟล์ของฉัน</h2>
         <button 
           className="delete-selected-btn"
           onClick={handleDeleteSelected}
-          disabled={selectedFiles.size === 0} // ⭐️ 13. ปิดปุ่มถ้ายังไม่เลือก
+          disabled={selectedFiles.size === 0} 
         >
           ลบไฟล์ที่เลือก ({selectedFiles.size})
         </button>
       </div>
 
-      {files.length === 0 ? (
+      {/* ⭐️ 9. ส่วนควบคุม (เลือกทั้งหมด และ เรียงลำดับ) */}
+      <div className="mylist-controls">
+        <div className="select-all-container">
+          <input
+            type="checkbox"
+            id="selectAllCheckbox"
+            ref={selectAllCheckboxRef} // ⭐️ 10. ผูก Ref
+            checked={isAllSelected} // ⭐️ 11. ผูก State
+            onChange={handleSelectAll} // ⭐️ 12. ผูก Function
+            disabled={sortedFiles.length === 0}
+          />
+          <label htmlFor="selectAllCheckbox">
+            เลือกทั้งหมด ({selectedFiles.size} / {sortedFiles.length})
+          </label>
+        </div>
+        
+        <div className="sort-buttons">
+          <span>เรียงตาม:</span>
+          {/* ⭐️ 13. ปุ่มเรียงลำดับ */}
+          <button 
+            onClick={() => requestSort('filename')}
+            className={sortConfig.key === 'filename' ? 'active' : ''}
+          >
+            ชื่อ {sortConfig.key === 'filename' ? (sortConfig.order === 'asc' ? '▲' : '▼') : ''}
+          </button>
+          <button 
+            onClick={() => requestSort('uploaded_at')}
+            className={sortConfig.key === 'uploaded_at' ? 'active' : ''}
+          >
+            วันที่ {sortConfig.key === 'uploaded_at' ? (sortConfig.order === 'asc' ? '▲' : '▼') : ''}
+          </button>
+          <button 
+            onClick={() => requestSort('file_size_bytes')}
+            className={sortConfig.key === 'file_size_bytes' ? 'active' : ''}
+          >
+            ขนาด {sortConfig.key === 'file_size_bytes' ? (sortConfig.order === 'asc' ? '▲' : '▼') : ''}
+          </button>
+        </div>
+      </div>
+
+      {/* ⭐️ 14. เปลี่ยนไปใช้ 'sortedFiles' */}
+      {sortedFiles.length === 0 ? (
         <p>ยังไม่มีไฟล์</p>
       ) : (
         <ul className="file-list-ul">
-          {files.map(file => (
+          {/* ⭐️ 15. เปลี่ยนไปใช้ 'sortedFiles' */}
+          {sortedFiles.map(file => (
             <li key={file.id} className="file-list-item">
               <input
                 type="checkbox"
@@ -101,10 +202,8 @@ function MyListPage({ user }) {
               <span className="file-size">
                 { (file.file_size_bytes / 1024 / 1024).toFixed(2) } MB
               </span>
-              {/* ⭐️ 14. ปุ่ม "ดูไฟล์" (Download) */}
               <a 
-                // ✅ ถูก: ชี้ไปที่ Backend (8080) โดยตรง
-                href={`http://172.18.20.45:8080/files/download?id=${file.id}`} 
+                href={`/files/download?id=${file.id}`} 
                 className="file-action-btn view-btn"
                 target="_blank" 
                 rel="noopener noreferrer"

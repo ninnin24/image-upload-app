@@ -376,3 +376,50 @@ body {
 .react-datepicker-popper {
   z-index: 10; 
 }
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+.btn-approve {
+  background-color: #5cb85c; /* เขียว */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-approve:hover {
+  background-color: #4a9d4a;
+}
+.btn-reject {
+  background-color: #d9534f; /* แดง */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-reject:hover {
+  background-color: #c9302c;
+}
+
+/* สำหรับป้ายสถานะ */
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.status-badge.status-pending {
+  background-color: #f0ad4e; /* ส้ม */
+  color: white;
+}
+.status-badge.status-approved {
+  background-color: #5cb85c; /* เขียว */
+  color: white;
+}
+.status-badge.status-rejected {
+  background-color: #d9534f; /* แดง */
+  color: white;
+}

@@ -10,6 +10,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import ActivityLog from './pages/ActivityLog'; 
 import Header from './components/Header.jsx';
+import PromotionPage from './pages/PromotionPage.jsx';
 
 const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
     if (!user || !user.role || !allowedRoles.includes(user.role)) {
@@ -114,6 +115,14 @@ function App() {
                     element={
                         <ProtectedRoute user={user}>
                             <MyListPage user={user} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/promotions"
+                    element={
+                        <ProtectedRoute user={user} allowedRoles={['user']}>
+                            <PromotionPage />
                         </ProtectedRoute>
                     }
                 />

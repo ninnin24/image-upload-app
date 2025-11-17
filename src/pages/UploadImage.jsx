@@ -1,67 +1,107 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import '../styles/UploadImage.css'; // ใช้ไฟล์ CSS ที่คุณมี
-import { FaFileUpload } from 'react-icons/fa'; // ⭐️ อย่าลืม import ไอคอน
+import '../styles/UploadImage.css'; 
+// ⭐️ 1. Import ไอคอนเพิ่มสำหรับ Loading และ Status
+import { 
+  FaFileUpload, 
+  FaSpinner, 
+  FaCheckCircle, 
+  FaExclamationCircle 
+} from 'react-icons/fa'; 
 
 function UploadImage({ user }) {
-  const [files, setFiles] = useState([]); // ⭐️ 1. เปลี่ยน State เป็น Array
+  const [files, setFiles] = useState([]); 
   const [isDragging, setIsDragging] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false); // ⭐️ 2. State สำหรับ Loading
+  const [uploadStatus, setUploadStatus] = useState({ type: 'idle', message: '' }); // ⭐️ 3. State สำหรับผลลัพธ์
   const fileInputRef = useRef(null); 
 
   const handleUpload = async () => {
-    if (files.length === 0) return alert('กรุณาเลือกไฟล์ก่อน!'); // ⭐️ 2. ตรวจสอบ Array
-    
+    if (files.length === 0) return;
+
+    setIsLoading(true); // ⭐️ 4. เริ่มหมุน
+    setUploadStatus({ type: 'idle', message: '' }); // ⭐️ 5. ล้างสถานะเก่า
+
     const formData = new FormData();
-    // ⭐️ 3. วนลูปเพื่อยัดไฟล์ทั้งหมดลง Form
     for (const file of files) {
-      formData.append('file', file); // ใช้ key 'file' สำหรับทุกไฟล์
+      formData.append('file', file);
     }
 
     try {
-      // ⭐️ 4. ใช้ Relative Path (เพื่อให้ Proxy ทำงาน)
       const res = await axios.post('/upload', formData, { 
         withCredentials: true,
       });
       
-      alert(res.data.message || 'อัปโหลดสำเร็จ!'); // ⭐️ 5. แสดงข้อความจาก Server
-      setFiles([]); // ⭐️ 6. ล้าง Array หลังอัปโหลด
-      fileInputRef.current.value = null; // เคลียร์ค่าใน input
+      // ⭐️ 6. ตั้งค่าสถานะ "สำเร็จ"
+      setUploadStatus({ 
+        type: 'success', 
+        message: res.data.message || `อัปโหลด ${files.length} ไฟล์สำเร็จ!` 
+      });
+      setFiles([]); 
+      fileInputRef.current.value = null; 
     } catch (e) {
-      alert('อัปโหลดล้มเหลว');
+      // ⭐️ 7. ตั้งค่าสถานะ "ล้มเหลว"
+      setUploadStatus({ type: 'error', message: 'อัปโหลดล้มเหลว กรุณาลองใหม่' });
+    } finally {
+      // ⭐️ 8. หยุดหมุน (ไม่ว่าจะสำเร็จหรือล้มเหลว)
+      setIsLoading(false); 
+    }
+  };
+
+  // ⭐️ 9. ฟังก์ชันสำหรับปุ่ม "ยกเลิก"
+  const handleClearFiles = () => {
+    setFiles([]);
+    setUploadStatus({ type: 'idle', message: '' }); // ล้างสถานะด้วย
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
     }
   };
 
   // --- ส่วนจัดการ Drag-and-Drop ---
-  const handleDragOver = (e) => e.preventDefault();
-  const handleDragEnter = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-
+  // ⭐️ 10. ปิดการใช้งานขณะกำลังโหลด
+  const handleDragOver = (e) => !isLoading && e.preventDefault();
+  const handleDragEnter = (e) => !isLoading && (e.preventDefault(), setIsDragging(true));
+  const handleDragLeave = (e) => !isLoading && (e.preventDefault(), setIsDragging(false));
   const handleDrop = (e) => {
+    if (isLoading) return; // ถ้าโหลดอยู่ ไม่ต้องทำ
     e.preventDefault();
     setIsDragging(false);
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length > 0) {
-      setFiles([...droppedFiles]); // ⭐️ 7. แปลง FileList เป็น Array
+      setFiles([...droppedFiles]);
+      setUploadStatus({ type: 'idle', message: '' }); // ล้างสถานะเก่า
     }
   };
 
   // --- ส่วนจัดการ Input ---
   const handleFileSelect = (e) => {
+    if (isLoading) return;
     const selectedFiles = e.target.files;
     if (selectedFiles.length > 0) {
-      setFiles([...selectedFiles]); // ⭐️ 8. แปลง FileList เป็น Array
+      setFiles([...selectedFiles]);
+      setUploadStatus({ type: 'idle', message: '' }); // ล้างสถานะเก่า
     }
   };
 
   const onDropZoneClick = () => {
-    fileInputRef.current.value = null; // เคลียร์ค่าเก่า
+    if (isLoading) return; // ถ้าโหลดอยู่ ห้ามคลิก
+    fileInputRef.current.value = null; 
     fileInputRef.current.click();
   };
 
   // --- ฟังก์ชันช่วยแสดงรายชื่อไฟล์ ---
   const renderFileNames = () => {
+    // ⭐️ 11. UI ขณะกำลังโหลด
+    if (isLoading) {
+      return (
+        <div className="loading-indicator">
+          <FaSpinner className="icon-spin" size={40} />
+          <p>กำลังอัปโหลด {files.length} ไฟล์...</p>
+        </div>
+      );
+    }
+    
     if (files.length === 0) {
-      // ⭐️ 9. UI เริ่มต้น (อันเก่าของคุณ)
       return (
         <>
           <FaFileUpload size={40} className="drop-zone-icon" />
@@ -69,16 +109,39 @@ function UploadImage({ user }) {
         </>
       );
     }
+
     return (
-      <ul className="file-list">
-        {/* ⭐️ 10. UI ใหม่ (เมื่อมีไฟล์) */}
-        {Array.from(files).map((file, index) => (
-          <li key={index}>
-            {file.name} ({ (file.size / 1024 / 1024).toFixed(2) } MB)
-          </li>
-        ))}
-      </ul>
+      <>
+        {/* ⭐️ 12. แสดงจำนวนไฟล์ที่เลือก (ตามคำขอ) */}
+        <p className="file-count">ไฟล์ที่เลือก: {files.length} ไฟล์</p>
+        <ul className="file-list">
+          {Array.from(files).map((file, index) => (
+            <li key={index}>
+              {file.name} ({ (file.size / 1024 / 1024).toFixed(2) } MB)
+            </li>
+          ))}
+        </ul>
+      </>
     );
+  };
+
+  // ⭐️ 13. ฟังก์ชันแสดงผลลัพธ์ (สำเร็จ/ล้มเหลว)
+  const renderStatusMessage = () => {
+    if (uploadStatus.type === 'success') {
+      return (
+        <div className="status-message success">
+          <FaCheckCircle /> {uploadStatus.message}
+        </div>
+      );
+    }
+    if (uploadStatus.type === 'error') {
+      return (
+        <div className="status-message error">
+          <FaExclamationCircle /> {uploadStatus.message}
+        </div>
+      );
+    }
+    return null; // 'idle' หรืออื่นๆ จะไม่แสดงอะไร
   };
 
   return (
@@ -86,8 +149,12 @@ function UploadImage({ user }) {
       <h2> อัปโหลดไฟล์</h2>
       <p>ลากไฟล์มาวางที่นี่ หรือ คลิกเพื่อเลือกไฟล์</p>
 
+      {/* ⭐️ 14. แสดงผลลัพธ์ที่นี่ */}
+      {renderStatusMessage()} 
+
       <div 
-        className={`drop-zone ${isDragging ? 'active' : ''}`}
+        // ⭐️ 15. เพิ่ม class 'loading' เพื่อให้ CSS จับได้
+        className={`drop-zone ${isDragging ? 'active' : ''} ${isLoading ? 'loading' : ''}`}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -99,7 +166,8 @@ function UploadImage({ user }) {
           onChange={handleFileSelect} 
           ref={fileInputRef}
           style={{ display: 'none' }} 
-          multiple // ⭐️ 11. เพิ่ม 'multiple' attribute
+          multiple 
+          disabled={isLoading} // ⭐️ 16. ปิด input ขณะโหลด
         />
         
         <div className="drop-zone-content">
@@ -107,13 +175,24 @@ function UploadImage({ user }) {
         </div>
       </div>
 
-      <button
-        onClick={handleUpload}
-        className="upload-button"
-        disabled={files.length === 0} // ⭐️ 12. ตรวจสอบ Array
-      >
-        อัปโหลด ({files.length} ไฟล์)
-      </button>
+      {/* ⭐️ 17. กลุ่มปุ่ม (เพิ่มปุ่มยกเลิก) */}
+      <div className="button-group">
+        {files.length > 0 && !isLoading && (
+          <button
+            onClick={handleClearFiles}
+            className="cancel-button"
+          >
+            ยกเลิก
+          </button>
+        )}
+        <button
+          onClick={handleUpload}
+          className="upload-button"
+          disabled={files.length === 0 || isLoading} // ⭐️ 18. ปิดปุ่มขณะโหลด
+        >
+          {isLoading ? 'กำลังอัปโหลด...' : `อัปโหลด (${files.length} ไฟล์)`}
+        </button>
+      </div>
     </div>
   );
 }

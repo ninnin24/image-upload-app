@@ -32,6 +32,7 @@ function Header({ user, onLogout }) {
                 <Link to="/home" className="nav-item">หน้าหลัก</Link>
                 {user && !isAdmin && <Link to="/upload" className="nav-item">อัปโหลดไฟล์</Link>}
                 {user && !isAdmin && <Link to="/my-list" className="nav-item">รายการของฉัน</Link>}
+                {user && !isAdmin && <Link to="/promotions" className="nav-item">โปรโมชั่น</Link>}
                 <Link to="/about" className="nav-item">เกี่ยวกับเรา</Link>
                 {isAdmin && <Link to="/admin/dashboard" className="nav-item">แดชบอร์ดผู้ดูแล</Link>} 
             </nav>
