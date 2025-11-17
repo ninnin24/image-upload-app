@@ -76,6 +76,7 @@ function HeaderMUI({ user, onLogout }) {
                     { to: "/user/dashboard", label: "หน้าหลัก" },
                     { to: "/upload", label: "อัปโหลดไฟล์" },
                     { to: "/my-list", label: "รายการของฉัน" },
+                    { to: "/activity", label: "ประวัติการใช้งาน" },
                     { to: "/contact", label: "ติดต่อเรา" }
                 ];
 

@@ -19,8 +19,6 @@ import {
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import StarIcon from '@mui/icons-material/Star';
 import BusinessIcon from '@mui/icons-material/Business';
-// ✅ ลบ LockIcon ออก เนื่องจากไม่ได้ใช้งานในโค้ด
-// import LockIcon from '@mui/icons-material/Lock'; 
 
 // ข้อมูลแผนราคา
 const pricingPlans = [
@@ -28,7 +26,8 @@ const pricingPlans = [
     name: 'Free',
     tag: null,
     description: 'เริ่มต้นใช้งานการจัดการไฟล์และวิดีโอฟรีได้ทันที',
-    priceMonthly: 0,
+    // ใช้ 0 สำหรับ Free
+    priceMonthly: 0, 
     priceYearly: 0,
     unit: '/ ตลอดชีพ',
     credits: '25 เครดิต/เดือน',
@@ -45,8 +44,9 @@ const pricingPlans = [
     name: 'Plus',
     tag: 'เป็นที่นิยมที่สุด',
     description: 'ขยายขีดความสามารถในการจัดการไฟล์สำหรับเว็บไซต์และแอปพลิเคชัน',
-    priceMonthly: 3, // 99 USD => 3xxx.xx บาท (สมมติ 3,299)
-    priceYearly: 30, // สมมติลด 15% สำหรับรายปี (3299 * 12 * 0.85 = 33,650)
+    // ⭐️ ใช้ราคาบาทจริงตามที่คุณสมมติ (3,299/เดือน, 33,650/ปี)
+    priceMonthly: 3299, 
+    priceYearly: 33650, 
     unit: '/ เดือน',
     credits: '225 เครดิต/เดือน',
     users: '3 ผู้ใช้ / 2 บัญชี',
@@ -63,8 +63,9 @@ const pricingPlans = [
     name: 'Advanced',
     tag: null,
     description: 'เพิ่มประสบการณ์การจัดการไฟล์ด้วยฟีเจอร์ระดับสูง',
-    priceMonthly: 7, // 249 USD => 7xxx.xx บาท (สมมติ 7,999)
-    priceYearly: 70, // สมมติลด 15% สำหรับรายปี (7999 * 12 * 0.85 = 81,590)
+    // ⭐️ ใช้ราคาบาทจริงตามที่คุณสมมติ (7,999/เดือน, 81,590/ปี)
+    priceMonthly: 7999, 
+    priceYearly: 81590, 
     unit: '/ เดือน',
     credits: '600 เครดิต/เดือน',
     users: '5 ผู้ใช้ / 3 บัญชี',
@@ -102,24 +103,25 @@ const currencySymbol = '฿'; // สกุลเงินบาทไทย
 
 // คอมโพเนนต์ Card สำหรับแสดงแผนราคา
 const PricingCard = ({ plan, isAnnual, isPopular }) => {
-    const price = isAnnual ? plan.priceYearly : plan.priceMonthly;
+    // ⭐️ ใช้ราคาโดยตรงจาก Plan Data
+    const rawPrice = isAnnual ? plan.priceYearly : plan.priceMonthly;
     
     // จัดรูปแบบราคาเป็นหลักพันหรือ 'ติดต่อ'
     const formattedPrice = 
-      typeof price === 'number' ? new Intl.NumberFormat('th-TH').format(price * (isAnnual ? 1000 : 1000) + 299) : price;
+      typeof rawPrice === 'number' ? new Intl.NumberFormat('th-TH').format(rawPrice) : rawPrice;
     
-    // คำนวณส่วนลดสำหรับรายปี (สมมติ)
-    const annualDiscount = isAnnual && plan.name !== 'Free' ? 'ประหยัด 15%' : null;
+    // คำนวณส่วนลดสำหรับรายปี
+    const annualDiscount = isAnnual && plan.name !== 'Free' && plan.name !== 'Enterprise' ? 'ประหยัด 15%' : null;
 
     return (
         <Card 
-            elevation={isPopular ? 10 : 3} // เน้นแผนที่ได้รับความนิยม
+            elevation={isPopular ? 10 : 3}
             sx={{ 
                 height: '100%', 
                 display: 'flex', 
                 flexDirection: 'column',
                 borderRadius: 2,
-                border: isPopular ? '3px solid #2196f3' : '1px solid #e0e0e0', // สีขอบสำหรับแผนยอดนิยม
+                border: isPopular ? '3px solid #2196f3' : '1px solid #e0e0e0',
                 transition: 'transform 0.3s',
                 '&:hover': {
                     transform: 'scale(1.03)',
@@ -156,7 +158,8 @@ const PricingCard = ({ plan, isAnnual, isPopular }) => {
                 
                 <Box sx={{ my: 3 }}>
                     <Typography variant="h3" component="p" sx={{ fontWeight: 'extra-bold', color: 'primary.dark' }}>
-                        {price !== 'ติดต่อ' ? currencySymbol : ''}
+                        {/* ⭐️ แสดงสัญลักษณ์ ฿ ถ้าไม่ใช่ 'ติดต่อ' */}
+                        {formattedPrice !== 'ติดต่อ' ? currencySymbol : ''}
                         {formattedPrice}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
@@ -216,77 +219,77 @@ const PricingCard = ({ plan, isAnnual, isPopular }) => {
 
 // คอมโพเนนต์หลัก MyPricingPage
 function MyPricingPage() {
-  const [isAnnual, setIsAnnual] = useState(false); // false = รายเดือน, true = รายปี
-  
-  const handleToggle = () => {
-    setIsAnnual(prev => !prev);
-  };
+    const [isAnnual, setIsAnnual] = useState(false); // false = รายเดือน, true = รายปี
+    
+    const handleToggle = () => {
+        setIsAnnual(prev => !prev);
+    };
 
-  return (
-    <Box sx={{ bgcolor: '#f7f9fc', minHeight: '100vh', py: 8 }}>
-      <Container maxWidth="lg">
-        
-        {/* ส่วนหัวของหน้า */}
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: '#1e3a5a' }}>
-            CloudFile Storage
-          </Typography>
-          <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
-            แพลตฟอร์มการจัดการรูปภาพและวิดีโอที่ขับเคลื่อนด้วย AI เพื่อจัดการ เปลี่ยนแปลง และส่งมอบเนื้อหาได้อย่างเหมาะสม
-          </Typography>
-        </Box>
-
-        {/* ส่วนสลับแผนรายเดือน/รายปี */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 6 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: isAnnual ? 'text.secondary' : 'primary.main' }}>
-                รายเดือน
-            </Typography>
-            <FormControlLabel
-                control={
-                    <Switch
-                        checked={isAnnual}
-                        onChange={handleToggle}
-                        name="pricingToggle"
-                        color="primary"
-                    />
-                }
-                label={
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: isAnnual ? 'primary.main' : 'text.secondary' }}>
-                        รายปี
+    return (
+        <Box sx={{ bgcolor: '#f7f9fc', minHeight: '100vh', py: 8 }}>
+            <Container maxWidth="lg">
+                
+                {/* ส่วนหัวของหน้า */}
+                <Box sx={{ textAlign: 'center', mb: 6 }}>
+                    <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: '#1e3a5a' }}>
+                        CloudFile Storage
                     </Typography>
-                }
-                labelPlacement="start"
-                sx={{ mx: 2 }}
-            />
-            {isAnnual && (
-                <Box sx={{ bgcolor: 'error.main', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontWeight: 'bold', fontSize: '0.8rem' }}>
-                    ลด 15%
+                    <Typography variant="h5" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+                        แพลตฟอร์มการจัดการรูปภาพและวิดีโอที่ขับเคลื่อนด้วย AI เพื่อจัดการ เปลี่ยนแปลง และส่งมอบเนื้อหาได้อย่างเหมาะสม
+                    </Typography>
                 </Box>
-            )}
-        </Box>
 
-        {/* ตารางราคา (Grid) */}
-        <Grid container spacing={4} alignItems="stretch">
-          {pricingPlans.map((plan, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <PricingCard 
-                plan={plan} 
-                isAnnual={isAnnual} 
-                isPopular={plan.name === 'Plus'} // กำหนดให้ Plus เป็นแพ็กเกจยอดนิยม
-              />
-            </Grid>
-          ))}
-        </Grid>
-        
-        {/* ส่วนท้าย (Footer Note) */}
-        <Box sx={{ mt: 6, p: 3, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
-            <Typography variant="caption" color="text.secondary">
-                * ราคานี้อาจมีการเปลี่ยนแปลงและยังไม่รวมภาษีมูลค่าเพิ่ม สำหรับรายละเอียดเพิ่มเติมกรุณาติดต่อทีมงาน
-            </Typography>
+                {/* ส่วนสลับแผนรายเดือน/รายปี */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 6 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: isAnnual ? 'text.secondary' : 'primary.main' }}>
+                        รายเดือน
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={isAnnual}
+                                onChange={handleToggle}
+                                name="pricingToggle"
+                                color="primary"
+                            />
+                        }
+                        label={
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: isAnnual ? 'primary.main' : 'text.secondary' }}>
+                                รายปี
+                            </Typography>
+                        }
+                        labelPlacement="start"
+                        sx={{ mx: 2 }}
+                    />
+                    {isAnnual && (
+                        <Box sx={{ bgcolor: 'error.main', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontWeight: 'bold', fontSize: '0.8rem' }}>
+                            ลด 15%
+                        </Box>
+                    )}
+                </Box>
+
+                {/* ตารางราคา (Grid) */}
+                <Grid container spacing={4} alignItems="stretch">
+                    {pricingPlans.map((plan, index) => (
+                        <Grid item xs={12} sm={6} md={3} key={index}>
+                            <PricingCard 
+                                plan={plan} 
+                                isAnnual={isAnnual} 
+                                isPopular={plan.name === 'Plus'}
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+                
+                {/* ส่วนท้าย (Footer Note) */}
+                <Box sx={{ mt: 6, p: 3, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
+                    <Typography variant="caption" color="text.secondary">
+                        * ราคานี้อาจมีการเปลี่ยนแปลงและยังไม่รวมภาษีมูลค่าเพิ่ม สำหรับรายละเอียดเพิ่มเติมกรุณาติดต่อทีมงาน
+                    </Typography>
+                </Box>
+            </Container>
         </Box>
-      </Container>
-    </Box>
-  );
+    );
 }
 
 export default MyPricingPage;

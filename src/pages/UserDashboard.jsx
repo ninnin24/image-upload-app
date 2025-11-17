@@ -1,343 +1,278 @@
+// src/pages/UserDashboard.jsx
 import React, { useState, useEffect } from 'react';
-// import axios from 'axios'; // ❌ ถูกลบออกเนื่องจากไม่ได้ใช้งาน
-import { Navigate, useNavigate } from 'react-router-dom';
-import { 
-    Box, 
-    Typography, 
-    Container, 
-    Card, 
-    useTheme, 
-    Grid, 
-    Button,
-    List, 
-    ListItem, 
-    ListItemIcon, 
-    ListItemText, 
-    Divider,
-    useMediaQuery
+import {
+  Box,
+  Typography,
+  Card,
+  Grid,
+  Button,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  useTheme,
 } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'; 
-// นำเข้าไอคอนสำหรับ Activity Log
-import UploadIcon from '@mui/icons-material/CloudUpload';
-import DeleteIcon from '@mui/icons-material/DeleteForever';
-import DownloadIcon from '@mui/icons-material/GetApp';
-import ShareIcon from '@mui/icons-material/Share';
-import CheckCircleIcon from '@mui/icons-material/CheckCircleOutline';
+import { useNavigate } from 'react-router-dom';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-
-// -------------------- Mock Data / Calculation --------------------
-
-const calculateStorage = (files) => {
-    const usedBytes = files.reduce((sum, file) => sum + (file.size || 0), 0);
-    const usedMB = usedBytes / (1024 * 1024);
-    const totalMB = 1024; // พื้นที่รวม 1GB
-    const remainingMB = totalMB - usedMB;
-
-    return {
-        used: usedMB,
-        total: totalMB,
-        remaining: Math.max(0, remainingMB),
-        percentage: Math.min(100, (usedMB / totalMB) * 100),
-    };
-};
-
-const mockActivities = [
-    { id: 1, type: 'อัปโหลด', detail: 'รายงานประจำปี_Q3.pdf', date: '14 พ.ย. 2568, 14:00', icon: UploadIcon, color: '#40E0D0' },
-    { id: 2, type: 'ดาวน์โหลด', detail: 'แผนการตลาด_2026.docx', date: '14 พ.ย. 2568, 10:30', icon: DownloadIcon, color: '#00AEEF' },
-    { id: 3, type: 'ลบไฟล์', detail: 'ไฟล์ชั่วคราว_01.tmp', date: '13 พ.ย. 2568, 16:15', icon: DeleteIcon, color: '#FF7F50' },
-    { id: 4, type: 'แชร์ไฟล์', detail: 'ภาพรวมโปรเจกต์ (ไปยัง user@co.th)', date: '13 พ.ย. 2568, 09:00', icon: ShareIcon, color: '#87CEEB' },
-    { id: 5, type: 'อัปโหลด', detail: 'Presentation_Demo.pptx', date: '12 พ.ย. 2568, 11:45', icon: UploadIcon, color: '#40E0D0' },
-    { id: 6, type: 'ดาวน์โหลด', detail: 'ข้อมูลลูกค้าทั้งหมด.csv', date: '11 พ.ย. 2568, 15:30', icon: DownloadIcon, color: '#00AEEF' },
-    { id: 7, type: 'อัปโหลด', detail: 'โลโก้บริษัทฉบับสุดท้าย.png', date: '10 พ.ย. 2568, 08:00', icon: UploadIcon, color: '#40E0D0' },
-    { id: 8, type: 'แชร์ไฟล์', detail: 'งบประมาณ Q4', date: '09 พ.ย. 2568, 14:30', icon: ShareIcon, color: '#87CEEB' },
+// Mock Data
+const mockFiles = [
+  { id: 1, name: 'Project Plan.pdf', size: 9.5 * 1024 * 1024, date: '15 พ.ย. 2568, 15:00' },
+  { id: 2, name: 'Client Report.docx', size: 5.2 * 1024 * 1024, date: '15 พ.ย. 2568, 10:30' },
+  { id: 3, name: 'Design Mockup.zip', size: 78.2 * 1024 * 1024, date: '14 พ.ย. 2568, 16:15' },
 ];
 
+const mockActivities = [
+  { id: 1, action: 'อัปโหลด', file: 'Project Plan.pdf', time: '15 พ.ย. 2568, 15:00', color: '#4CAF50' },
+  { id: 2, action: 'ดาวน์โหลด', file: 'Client Report.docx', time: '15 พ.ย. 2568, 10:30', color: '#2196F3' },
+];
 
-// -------------------- UserDashboard Component --------------------
+// File Preview Modal
+const FilePreviewModal = ({ open, onClose, file }) => {
+  if (!file) return null;
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography fontWeight="bold">{file.name}</Typography>
+        <IconButton onClick={onClose}><CloseIcon /></IconButton>
+      </DialogTitle>
+      <DialogContent dividers>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <FolderOpenIcon sx={{ fontSize: 80, color: '#ccc', mb: 2 }} />
+          <Typography variant="h6">{file.name}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {(file.size / 1024 / 1024).toFixed(1)} MB • อัปโหลดเมื่อ {file.date}
+          </Typography>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="outlined">ดาวน์โหลด</Button>
+        <Button variant="contained" color="primary">เปิดไฟล์</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
-function UserDashboard({ user, onLogout }) {
-    const theme = useTheme();
-    const navigate = useNavigate();
-    const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-    
-    // ✅ แก้ไข: ลบ setFiles ออก
-    const [files] = useState([
-        { id: 101, filename: 'Project Plan.pdf', size: 12500000, uploaded_at: new Date(Date.now() - 3600000).toISOString() },
-        { id: 102, filename: 'Client Report.docx', size: 5500000, uploaded_at: new Date(Date.now() - 7200000).toISOString() },
-        { id: 103, filename: 'Design Mockup.zip', size: 82000000, uploaded_at: new Date(Date.now() - 10800000).toISOString() },
-        { id: 104, filename: 'Meeting Notes.txt', size: 10000, uploaded_at: new Date(Date.now() - 14400000).toISOString() },
-        { id: 105, filename: 'Budget Sheet.xlsx', size: 4100000, uploaded_at: new Date(Date.now() - 18000000).toISOString() },
-        { id: 106, filename: 'Presentation.pptx', size: 12000000, uploaded_at: new Date(Date.now() - 21600000).toISOString() },
-        { id: 107, filename: 'Backup Data.rar', size: 50000000, uploaded_at: new Date(Date.now() - 25200000).toISOString() },
-    ]); 
-    
-    // ✅ แก้ไข: ลบ setStorage ออก
-    const [storage] = useState(calculateStorage(files));
+function UserDashboard() {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-    // ✅ ปรับปรุง: ลบการเรียก API ที่ถูก Comment out ออกจาก useEffect ชั่วคราว หรือลบ useEffect ทิ้งไปเลยหากไม่ได้ใช้
-    useEffect(() => {
-        // if (!user) return;
-        // console.log("User data loaded:", user); 
-    }, [user]);
+  // ✅ ปิดการเลื่อนเฉพาะหน้านี้
+  useEffect(() => {
+    document.body.style.overflow = "hidden"; // ห้ามเลื่อนทั้งหน้าแดชบอร์ด
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+    return () => {
+      document.body.style.overflow = "auto"; // ออกจากหน้าแดชบอร์ดให้กลับมาเลื่อนปกติ
+    };
+  }, []);
 
-    const data = [
-        { name: 'พื้นที่ใช้งาน', value: storage.used },
-        { name: 'พื้นที่คงเหลือ', value: storage.remaining },
-    ];
-    
-    const headerHeightXs = theme.mixins.toolbar.minHeight;
-    const headerHeightMd = theme.mixins.toolbar['@media (min-width:600px)']?.minHeight || 72;
-    const heroSectionHeight = 180; 
+  const storage = {
+    used: 99.3,
+    total: 1024,
+    remaining: 1024 - 99.3,
+    percentage: 10,
+  };
 
-    const remainingHeightCalc = (headerH) => `calc(100vh - ${headerH}px - ${heroSectionHeight}px)`;
+  const pieData = [
+    { name: 'ใช้แล้ว', value: storage.used },
+    { name: 'เหลือ', value: storage.remaining },
+  ];
+  const COLORS = ['#1E88E5', '#E3F2FD'];
 
+  const openFile = (file) => {
+    setSelectedFile(file);
+    setModalOpen(true);
+  };
 
-    return (
-        <Box
-            sx={{
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: theme.palette.background.default,
-                color: theme.palette.text.primary,
-                paddingTop: theme.mixins.toolbar,
-                overflowY: 'hidden', 
-            }}
-        >
-            {/* 1. Hero Section (ส่วนต้อนรับสีฟ้า) */}
-            <Box
+  const goToMyList = () => navigate('/my-list');
+
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        p: { xs: 2, md: 4 },
+        overflow: 'hidden',
+        background: '#f8fafc',
+      }}
+    >
+      <Card
+        sx={{
+          height: '100%',
+          borderRadius: 5,
+          p: { xs: 3, md: 4 },
+          boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Typography variant="h4" sx={{ mb: 4, fontWeight: 800, textAlign: 'center' }}>
+          ไฟล์ล่าสุด
+        </Typography>
+
+        <Grid container spacing={4} sx={{ flex: 1 }}>
+          {/* LEFT CHART */}
+          <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ width: '100%', maxWidth: 280, position: 'relative' }}>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    innerRadius="65%"
+                    outerRadius="85%"
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={450}
+                  >
+                    {pieData.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <Box
                 sx={{
-                    height: heroSectionHeight, 
-                    flexShrink: 0, 
-                    px: 2,
-                    textAlign: 'center',
-                    backgroundColor: theme.palette.primary.light,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center',
                 }}
-            >
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1, color: theme.palette.text.primary, mt: 1 }}> 
-                    ยินดีต้อนรับ, {user.username || 'ผู้ใช้'}
+              >
+                <Typography variant="h3" fontWeight="900" color="primary">
+                  10%
                 </Typography>
-                <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
-                    ภาพรวมพื้นที่เก็บข้อมูลและกิจกรรมล่าสุดของคุณ
+                <Typography variant="caption" color="text.secondary">
+                  ใช้งานแล้ว
                 </Typography>
+              </Box>
             </Box>
 
-            {/* 2. Main Dashboard Content (ส่วนนี้จะยืดเต็มพื้นที่ที่เหลือและจัดการการ Scroll ภายใน) */}
-            <Container
-                maxWidth="xl"
-                sx={{
-                    flexGrow: 1, 
-                    overflowY: isMobile ? 'auto' : 'hidden', 
-                    pt: 4, 
-                    pb: 4,
-                    height: isMobile ? 'auto' : { 
-                        xs: remainingHeightCalc(headerHeightXs),
-                        md: remainingHeightCalc(headerHeightMd)
-                    },
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}
-            >
-                <Grid container spacing={4} sx={{ flexGrow: 1, height: isMobile ? 'auto' : '100%' }}>
-                    
-                    {/* คอลัมน์ซ้าย: สถิติพื้นที่เก็บข้อมูล (lg={4}) */}
-                    <Grid item xs={12} lg={4} sx={{ height: isMobile ? 'auto' : '100%' }}>
-                        <Card 
-                            elevation={4} 
-                            sx={{ 
-                                p: 3, 
-                                height: '100%', 
-                                backgroundColor: theme.palette.background.paper, 
-                                display: 'flex', 
-                                flexDirection: 'column',
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.primary.dark, flexShrink: 0 }}>
-                                ภาพรวมพื้นที่เก็บข้อมูล (MB)
-                            </Typography>
-                            
-                            {/* Radial Chart - ตรึงความสูงไว้ */}
-                            <Box sx={{ height: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={data}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60} 
-                                            outerRadius={90}
-                                            startAngle={90}
-                                            endAngle={-270}
-                                            paddingAngle={0}
-                                            fill="#8884d8"
-                                            isAnimationActive={true}
-                                        >
-                                            <Cell fill={theme.palette.secondary.main} key="used" />
-                                            <Cell fill={theme.palette.primary.light} key="remaining" />
-                                        </Pie>
-                                        <Tooltip formatter={(value) => `${value.toFixed(2)} MB`} />
-                                        <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" fill={theme.palette.text.primary}>
-                                            <tspan x="50%" dy="-0.5em" style={{ fontSize: '1.5rem', fontWeight: 700 }}>{storage.percentage.toFixed(0)}%</tspan>
-                                            <tspan x="50%" dy="1.5em" style={{ fontSize: '0.8rem', fill: theme.palette.text.secondary }}>ใช้งานแล้ว</tspan>
-                                        </text>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </Box>
-                            
-                            {/* Storage Stats - ตรึงความสูงไว้ */}
-                            <Grid container spacing={2} sx={{ mt: 2, flexShrink: 0, flexGrow: 1 }}> 
-                                <Grid item xs={6}>
-                                    <Box sx={{ p: 1, textAlign: 'left', borderLeft: `5px solid ${theme.palette.secondary.main}` }}>
-                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>ใช้งานแล้ว</Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.dark, mt: 0.5 }}>{storage.used.toFixed(2)} MB</Typography>
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Box sx={{ p: 1, textAlign: 'left', borderLeft: `5px solid ${theme.palette.primary.light}` }}>
-                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>คงเหลือ</Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.dark, mt: 0.5 }}>{storage.remaining.toFixed(2)} MB</Typography>
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Button variant="contained" color="primary" fullWidth sx={{ mt: 2, fontWeight: 700 }}>
-                                        อัปเกรดพื้นที่เก็บข้อมูล
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Card>
-                    </Grid>
+            <Box sx={{ mt: 3, width: '100%' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2">
+                  <FiberManualRecordIcon sx={{ color: '#1E88E5', fontSize: 14, mr: 0.5 }} /> ใช้แล้ว
+                </Typography>
+                <Typography fontWeight="bold">99.3 MB</Typography>
+              </Box>
 
-                    {/* คอลัมน์ขวา: 2 Card ในแนวนอน (lg={8}) */}
-                    <Grid item xs={12} lg={8} sx={{ 
-                        height: isMobile ? 'auto' : '100%', 
-                        display: 'flex', 
-                        flexDirection: isMobile ? 'column' : 'row', 
-                        gap: theme.spacing(4) 
-                    }}>
-                        
-                        {/* 2.3. ไฟล์ที่อัปโหลดล่าสุด (Column 1/2) */}
-                        <Card 
-                            elevation={4} 
-                            sx={{ 
-                                p: 3, 
-                                flexGrow: 1, 
-                                flexBasis: isMobile ? 'auto' : '50%',
-                                height: isMobile ? 'auto' : '100%', 
-                                backgroundColor: theme.palette.background.paper,
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.primary.dark, flexShrink: 0 }}>
-                                ไฟล์ที่อัปโหลดล่าสุด
-                            </Typography>
-                            
-                            {/* List Content - ส่วนที่ Scroll ได้ (ใน Desktop) */}
-                            <Box sx={{ flexGrow: 1, overflowY: isMobile ? 'hidden' : 'auto', paddingRight: 1 }}>
-                                {files.length === 0 ? (
-                                    <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
-                                        คุณยังไม่มีไฟล์ในระบบ
-                                    </Typography>
-                                ) : (
-                                    <List dense>
-                                        {files.slice(0, 7).map(file => (
-                                            <ListItem key={file.id} disablePadding sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <ListItemText
-                                                    primary={<Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>{file.filename}</Typography>}
-                                                    secondary={`ขนาด: ${(file.size / (1024 * 1024)).toFixed(2)} MB | อัปโหลด: ${new Date(file.uploaded_at).toLocaleDateString()}`}
-                                                />
-                                                <Button size="small" variant="text" sx={{ color: theme.palette.warning.main, flexShrink: 0 }}>
-                                                    จัดการ
-                                                </Button>
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                )}
-                            </Box>
-                            
-                            {/* Footer Button - ตรึงไว้ */}
-                            <Box sx={{ mt: 2, textAlign: 'right', flexShrink: 0 }}>
-                                <Button
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                    onClick={() => navigate('/my-list')}
-                                >
-                                    ดูทั้งหมด
-                                </Button>
-                            </Box>
-                            
-                        </Card>
-                        
-                        {/* 2.4. ประวัติการกระทำ (Column 2/2) */}
-                        <Card 
-                            elevation={4} 
-                            sx={{ 
-                                p: 3, 
-                                flexGrow: 1, 
-                                flexBasis: isMobile ? 'auto' : '50%',
-                                height: isMobile ? 'auto' : '100%', 
-                                backgroundColor: theme.palette.background.paper,
-                                display: 'flex',
-                                flexDirection: 'column' 
-                            }}
-                        >
-                            {/* Title - ตรึงไว้ */}
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.primary.dark, flexShrink: 0 }}>
-                                ประวัติการกระทำ (Activity Log)
-                            </Typography>
-                            
-                            {/* List Content - ส่วนที่ Scroll ได้ (ใน Desktop) */}
-                            <Box sx={{ flexGrow: 1, overflowY: isMobile ? 'hidden' : 'auto', paddingRight: 1 }}>
-                                <List dense>
-                                    {mockActivities.map((activity, index) => (
-                                        <React.Fragment key={activity.id}>
-                                            <ListItem disablePadding>
-                                                <ListItemIcon>
-                                                    <activity.icon sx={{ color: activity.color }} />
-                                                </ListItemIcon>
-                                                <ListItemText
-                                                    primary={
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                            <Typography component="span" variant="body1" sx={{ fontWeight: 600 }}>
-                                                                {activity.type}
-                                                            </Typography>
-                                                            <Typography component="span" variant="caption" color="text.secondary">
-                                                                {activity.date}
-                                                            </Typography>
-                                                        </Box>
-                                                    }
-                                                    secondary={activity.detail}
-                                                />
-                                            </ListItem>
-                                            {index < mockActivities.length - 1 && <Divider component="li" />}
-                                        </React.Fragment>
-                                    ))}
-                                    {mockActivities.length === 0 && (
-                                        <Box sx={{ textAlign: 'center', py: 5 }}>
-                                            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
-                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>ไม่มีกิจกรรมล่าสุด</Typography>
-                                        </Box>
-                                    )}
-                                </List>
-                            </Box>
-                            
-                        </Card>
-                    </Grid>
-                </Grid>
-            </Container>
-        </Box>
-    );
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                <Typography variant="body2">
+                  <FiberManualRecordIcon sx={{ color: '#E3F2FD', fontSize: 14, mr: 0.5 }} /> เหลือ
+                </Typography>
+                <Typography fontWeight="bold">924.7 MB</Typography>
+              </Box>
+            </Box>
+
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              sx={{ mt: 3, py: 1.8, borderRadius: 4, fontSize: '1.1rem' }}
+            >
+              อัปเกรดพื้นที่
+            </Button>
+          </Grid>
+
+          {/* RIGHT FILE LIST */}
+          <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ mb: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6" fontWeight="bold">ไฟล์ล่าสุด</Typography>
+
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={goToMyList}
+                  sx={{ color: 'primary.main', fontWeight: 600 }}
+                >
+                  ดูทั้งหมด
+                </Button>
+              </Box>
+
+              <Grid container spacing={2}>
+                {mockFiles.map((file) => (
+                  <Grid item xs={12} key={file.id}>
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                        transition: '0.2s',
+                        '&:hover': {
+                          boxShadow: 6,
+                          borderColor: theme.palette.primary.main,
+                        },
+                      }}
+                      onClick={() => openFile(file)}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography fontWeight={600} noWrap>{file.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {(file.size / 1024 / 1024).toFixed(1)} MB • {file.date}
+                          </Typography>
+                        </Box>
+
+                        <Tooltip title="เปิดไฟล์">
+                          <IconButton size="small" color="primary">
+                            <FolderOpenIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            {/* ACTIVITY LOG */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccessTimeIcon sx={{ mr: 1 }} />
+                <Typography variant="h6" fontWeight="bold">ประวัติการใช้งาน</Typography>
+              </Box>
+
+              <Box sx={{ maxHeight: 180, overflowY: 'auto', pr: 1 }}>
+                {mockActivities.map((act) => (
+                  <Box
+                    key={act.id}
+                    sx={{
+                      p: 1.5,
+                      borderLeft: `4px solid ${act.color}`,
+                      bgcolor: '#fafafa',
+                      borderRadius: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={700} color={act.color}>
+                      {act.action}
+                    </Typography>
+                    <Typography variant="body2" noWrap>{act.file}</Typography>
+                    <Typography variant="caption" color="text.secondary">{act.time}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Card>
+
+      <FilePreviewModal open={modalOpen} onClose={() => setModalOpen(false)} file={selectedFile} />
+    </Box>
+  );
 }
 
 export default UserDashboard;
