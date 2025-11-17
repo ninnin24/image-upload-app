@@ -1,12 +1,13 @@
 import React, { useState } from "react"; 
 import { CgAlignBottom, CgBox } from "react-icons/cg";
-import { VscAccount, VscOutput, VscFiles } from "react-icons/vsc"; 
+import { VscAccount, VscOutput, VscFiles, VscTag } from "react-icons/vsc"; // ⭐️ 1. เพิ่ม VscTag
 
 import DashboardSummary from "./DashboardSummary.jsx";
 import CompanyManagement from "./CompanyManagement.jsx";
 import UserManagement from "./UserManagement.jsx";
 import ReportsAudit from "./ReportsAudit.jsx";
 import AllFilesAudit from "./AllFilesAudit.jsx"; 
+import PromotionManagement from "./PromotionManagement.jsx"; // ⭐️ 2. Import คอมโพเนนต์ใหม่
 
 import "../styles/Dashboard.css";
 
@@ -25,6 +26,8 @@ function AdminDashboard() {
         return <ReportsAudit />;
       case "all_files": 
         return <AllFilesAudit />;
+      case "promotions": 
+        return <PromotionManagement />;
       default:
         return <DashboardSummary />;
     }
@@ -71,6 +74,14 @@ function AdminDashboard() {
         >
           <VscFiles size={22} className="icon" />
             ดูไฟล์ทั้งหมด
+        </button>
+        
+        <button
+          className={`sidebar-btn ${activeTab === "promotions" ? "active" : ""}`}
+          onClick={() => setActiveTab("promotions")}
+        >
+          <VscTag size={22} className="icon" />
+            จัดการโปรโมชั่น
         </button>
 
       </div>

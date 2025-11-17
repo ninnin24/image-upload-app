@@ -61,8 +61,16 @@ function ReportsAudit() {
     }
   };
 
+  // ⭐️ (ฟังก์ชันนี้ถูกต้องแล้ว)
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  };
+
   const exportToExcel = useCallback(() => {
-    // 💡 แก้ไข: ใช้ Relative Path ดีกว่า Hardcoded IP
     window.location.href = '/admin/export/excel';
   }, []);
 
@@ -105,13 +113,11 @@ function ReportsAudit() {
     return Array.from(extensions).sort();
   }, [userLogs, selectedGroup]);
 
-  // ⭐ 3. สร้าง Options สำหรับ "นามสกุลไฟล์" จาก uniqueExtensions
   const extensionOptions = useMemo(() => {
     const options = uniqueExtensions.map(ext => ({
       value: ext,
-      label: `.${ext}` // แสดงผลเป็น .pdf, .jpg
+      label: `.${ext}`
     }));
-    // เพิ่ม 'ทั้งหมด' เข้าไปด้านบนสุด
     return [{ value: '', label: 'ทั้งหมด' }, ...options];
   }, [uniqueExtensions]);
 
@@ -177,11 +183,14 @@ function ReportsAudit() {
 
   const totalPages = Math.ceil(filteredAndSortedLogs.length / itemsPerPage);
 
+  // ==========================================================
+  // ⭐️ 1. (แก้ไข) แก้ไข logStats
+  // ==========================================================
   const logStats = useMemo(() => {
     const totalSize = filteredAndSortedLogs.reduce((sum, log) => sum + log.file_size_bytes, 0);
     return {
       total: filteredAndSortedLogs.length,
-      totalSizeMB: (totalSize / 1024 / 1024).toFixed(2),
+      totalSize: totalSize, // ⬅️ แก้ไข: ส่งค่ารวม (bytes) ไปตรงๆ
       uploads: filteredAndSortedLogs.filter(log => log.action_type === 'UPLOAD').length,
       downloads: filteredAndSortedLogs.filter(log => log.action_type === 'DOWNLOAD').length,
       deletes: filteredAndSortedLogs.filter(log => log.action_type === 'DELETE').length
@@ -263,7 +272,7 @@ function ReportsAudit() {
             <thead>
               <tr>
                 <th>กลุ่ม / ผู้ใช้</th>
-                <th>จำนวนไฟล์ทั้งหมด</th>
+                <th>จำนวนไฟล์ทั้งหมดของการใช้งาน</th>
                 <th>อัปโหลดล่าสุด</th>
               </tr>
             </thead>
@@ -314,7 +323,10 @@ function ReportsAudit() {
             backgroundColor: '#f5f5f5', borderRadius: '5px'
           }}>
             <div><strong>รายการทั้งหมด:</strong> {logStats.total}</div>
-            <div><strong>ขนาดรวม:</strong> {logStats.totalSizeMB} MB</div>
+            
+            {/* ⭐️ 2. (แก้ไข) แก้ไข JSX ที่แสดงผล */}
+            <div><strong>ขนาดรวม:</strong> {formatFileSize(logStats.totalSize)}</div>
+            
             <div className="action-upload"><strong>อัปโหลด:</strong> {logStats.uploads}</div>
             <div className="action-download"><strong>ดาวน์โหลด:</strong> {logStats.downloads}</div>
             <div className="action-delete"><strong>ลบ:</strong> {logStats.deletes}</div>
@@ -361,7 +373,7 @@ function ReportsAudit() {
                 </th>
                 <th onClick={() => requestSort('file_size_bytes')} style={{ cursor: 'pointer' }}>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    ขนาด (MB) {getSortArrow('file_size_bytes')}
+                    ขนาด {getSortArrow('file_size_bytes')}
                   </div>
                 </th>
                 <th onClick={() => requestSort('created_at')} style={{ cursor: 'pointer' }}>
@@ -383,7 +395,9 @@ function ReportsAudit() {
                         style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {log.file_name}
                     </td>
-                    <td>{(log.file_size_bytes / 1024 / 1024).toFixed(2)}</td>
+                    
+                    <td>{formatFileSize(log.file_size_bytes)}</td>
+
                     <td>
                       {new Date(log.created_at).toLocaleString('th-TH', {
                         year: 'numeric', month: 'short', day: 'numeric',

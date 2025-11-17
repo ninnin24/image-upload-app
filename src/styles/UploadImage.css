@@ -113,3 +113,114 @@
 .file-list li:last-child {
   border-bottom: none;
 }
+
+/* --- ส่วนที่เพิ่มใหม่สำหรับ Loading, Status, และ Buttons --- */
+
+/* 1. สำหรับ Loading Spinner */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #555;
+}
+
+/* 2. ทำให้ไอคอนหมุน (สำคัญมาก) */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.icon-spin {
+  animation: spin 2s linear infinite;
+  margin-bottom: 10px;
+}
+
+/* 3. ทำให้ Drop-zone ดูเหมือน "ปิด" ขณะโหลด */
+.drop-zone.loading {
+  background-color: #f9f9f9;
+  border-color: #ddd;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 4. กล่องข้อความแสดงสถานะ (สำเร็จ/ล้มเหลว) */
+.status-message {
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+}
+
+.status-message.success {
+  background-color: #e6f7ec;
+  border: 1px solid #b7ebc9;
+  color: #0f5132;
+}
+
+.status-message.error {
+  background-color: #fdebeE;
+  border: 1px solid #f5c6cb;
+  color: #842029;
+}
+
+/* 5. แสดงจำนวนไฟล์ที่เลือก */
+.file-count {
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* 6. จัดการกลุ่มปุ่ม (อัปโหลด และ ยกเลิก) */
+.button-group {
+  display: flex;
+  justify-content: flex-end; /* จัดปุ่มไปทางขวา */
+  gap: 10px; /* ระยะห่างระหว่างปุ่ม */
+  margin-top: 15px;
+  width: 100%;
+}
+
+/* 7. ปุ่มยกเลิก (สีเทา/แดงอ่อน) */
+.cancel-button {
+  padding: 10px 20px;
+  background-color: #f1f1f1; /* สีเทาอ่อน */
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #e7e7e7;
+}
+
+/* (ปรับ CSS ของ .upload-button ที่คุณมีอยู่ได้ตามต้องการ) */
+.upload-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.upload-button:hover {
+  background-color: #0056b3;
+}
+
+/* ปิดการใช้งานปุ่ม */
+.upload-button:disabled,
+.cancel-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
