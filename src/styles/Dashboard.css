@@ -423,3 +423,35 @@ body {
   background-color: #d9534f; /* แดง */
   color: white;
 }
+
+.form-group {
+  margin-bottom: 15px; /* เว้นระยะห่างระหว่างแถว */
+}
+
+/* 2. สไตล์ของ Label (ป้ายชื่อ) */
+.form-group label {
+  display: block; /* ทำให้ Label ขึ้นบรรทัดใหม่ */
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 3. สไตล์ของช่องกรอก (สำคัญ) */
+.form-group input[type="text"],
+.form-group input[type="number"] {
+  width: 100%; /* ทำให้ช่องกรอกเต็มความกว้าง */
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box; /* (สำคัญ) ป้องกัน padding ดันกล่องล้น */
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* (เพิ่ม) ทำให้ช่องกรอกดูดีขึ้นเมื่อคลิก */
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus {
+  border-color: #007bff; /* สีฟ้า (สีหลัก) */
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+  outline: none;
+}

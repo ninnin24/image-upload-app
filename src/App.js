@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Pages
 import UploadImage from './pages/UploadImage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
@@ -9,8 +10,11 @@ import MyListPage from './pages/MyListPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import ActivityLog from './pages/ActivityLog'; 
+import PromotionPage from './pages/PromotionPage.jsx'; // ของ User (หน้าเลือกซื้อ)
+import PromotionManagement from './pages/PromotionManagement.jsx'; // ⭐️ (เพิ่ม) ของ Admin (หน้าจัดการ)
+
+// Components
 import Header from './components/Header.jsx';
-import PromotionPage from './pages/PromotionPage.jsx';
 
 const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
     if (!user || !user.role || !allowedRoles.includes(user.role)) {
@@ -21,6 +25,7 @@ const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) =>
 
 function App() {
     const [user, setUser] = useState(undefined);
+
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -59,6 +64,7 @@ function App() {
             window.location.href = '/login';
         }
     };
+
     if (user === undefined) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -71,9 +77,13 @@ function App() {
         <Router>
             <Header user={user} onLogout={handleLogout} /> 
             <Routes>
+                {/* --- Public Routes --- */}
                 <Route path="/login" element={<LoginPage setUser={setUser} />} />
                 <Route path="/register" element={<LoginPage isRegister={true} setUser={setUser} />} /> 
-                
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="*" element={<h1>404: Page Not Found</h1>} />
+
+                {/* --- Redirect Root --- */}
                 <Route
                     path="/"
                     element={
@@ -102,6 +112,16 @@ function App() {
                         )
                     }
                 />
+
+                {/* --- User Routes --- */}
+                <Route
+                    path="/user/dashboard"
+                    element={
+                        <ProtectedRoute user={user} allowedRoles={['user']}>
+                            <UserDashboard user={user} />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/upload"
                     element={
@@ -113,7 +133,7 @@ function App() {
                 <Route
                     path="/my-list"
                     element={
-                        <ProtectedRoute user={user}>
+                        <ProtectedRoute user={user}> {/* ทั้ง User/Admin เข้าได้ */}
                             <MyListPage user={user} />
                         </ProtectedRoute>
                     }
@@ -122,11 +142,12 @@ function App() {
                     path="/promotions"
                     element={
                         <ProtectedRoute user={user} allowedRoles={['user']}>
-                            <PromotionPage />
+                            <PromotionPage /> {/* หน้า User เลือกซื้อแพ็คเกจ */}
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/about" element={<AboutPage />} />
+
+                {/* --- Admin Routes --- */}
                 <Route
                     path="/admin/dashboard"
                     element={
@@ -143,16 +164,16 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-
+                {/* ⭐️ (เพิ่ม) Route สำหรับหน้าจัดการโปรโมชั่นของ Admin */}
                 <Route
-                    path="/user/dashboard"
+                    path="/admin/promotions"
                     element={
-                        <ProtectedRoute user={user} allowedRoles={['user']}>
-                            <UserDashboard user={user} />
+                        <ProtectedRoute user={user} allowedRoles={['admin']}>
+                            <PromotionManagement />
                         </ProtectedRoute>
                     }
                 />
-                <Route path="*" element={<h1>404: Page Not Found</h1>} />
+
             </Routes>
         </Router>
     );
