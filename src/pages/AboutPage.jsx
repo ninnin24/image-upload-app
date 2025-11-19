@@ -1,161 +1,576 @@
-import React from 'react';
-import { Box, Typography, Container, List, ListItem, ListItemText,  } from '@mui/material';
-import { useTheme, createTheme, ThemeProvider } from '@mui/material/styles';
+import * as React from 'react';
+import { 
+    Typography, 
+    Box, 
+    Container, 
+    Grid, 
+    Paper, 
+    Divider, 
+    List, 
+    ListItem, 
+    ListItemIcon, 
+    ListItemText,
+    Button,
+    TextField, 
+    Link as MuiLink 
+} from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-// 🎨 FileFlow Theme Colors (นำมาจาก Theme กลาง)
+// Icons for the sections
+import { 
+    Gavel as MissionIcon, 
+    Visibility as VisionIcon,
+    Handshake as TeamworkIcon, 
+    History as HistoryIcon,
+    CheckCircle as CheckIcon,
+    LocationOn, 
+    Phone, 
+    Mail, 
+    RocketLaunch as GrowthIcon,
+    Star as StarIcon,
+    Person as TeamMemberIcon,
+    ArrowRightAlt as ArrowRightIcon 
+} from '@mui/icons-material';
+
+
+// 🎨 File Flow Theme Colors
 const fileFlowColors = {
-    primary: { dark: "#005377", main: "#00AEEF", light: "#87CEEB" }, 
-    secondary: { dark: "#2CA3A3", main: "#40E0D0", light: "#AEEEEE" },
-    accent: { main: "#FF7F50", light: "#FFB092" },
-    text: { primary: "#003F5C", secondary: "#007F91" }, 
-    background: { default: "#E0F7FA", paper: "#AEEEEE" },
+    primary: {
+        dark: "#005377",   // Deep Ocean Blue - สำหรับ Header, Sidebar, Hover / Active Buttons
+        main: "#00AEEF",   // Ocean Blue - ธีมหลักของ UI, Buttons, Card
+        light: "#87CEEB",  // Sky Blue - Background, Section, Card Light
+    }, 
+    secondary: {
+        dark: "#2CA3A3",   // Dark Turquoise - Hover / Accent Elements
+        main: "#40E0D0",   // Turquoise - Accent / Highlight
+        light: "#AEEEEE",  // Seafoam - Background / Card Highlight
+    },
+    accent: {
+        main: "#FF7F50",   // Coral Accent - CTA Button, Badge, Hover Elements
+    },
+    background: {
+        default: "#E0F7FA", // Very Light Cyan - หน้า UI หลัก
+        paper: "#AEEEEE",   // Card / Panel Background
+    },
+    text: {
+        primary: "#003F5C", // Dark Navy - ข้อความหลัก
+        secondary: "#007F91", // Medium Blue - ข้อความรอง
+        accent: "#FF7F50",    // Coral - ข้อความปุ่ม / Badge
+    },
+    footer_bg: '#1A2333', // ใช้สีเดิมของ Happy Soft สำหรับ Footer (ตามโค้ดเดิม)
+    warning: { main: '#FFC107' }, 
 };
 
-// ⚙️ กำหนด Theme (ต้องสร้าง Theme ใหม่ในไฟล์นี้เพื่อให้ useTheme ดึงค่าได้)
-const aboutTheme = createTheme({
-    typography: { fontFamily: ['Sarabun', 'sans-serif'].join(',') },
+// ⚙️ กำหนด Material UI Theme ด้วย FileFlow Colors
+const fileFlowTheme = createTheme({
+    typography: { 
+        fontFamily: ['Sarabun', 'sans-serif'].join(','),
+        h2: { fontWeight: 800, color: fileFlowColors.text.primary }, // ใช้สี Text Primary เป็นสีหัวข้อหลัก
+        h3: { fontWeight: 700 }, 
+        h4: { fontWeight: 700, color: fileFlowColors.primary.dark }, // หัวข้อรองใช้ Primary Dark
+        h5: { fontWeight: 600, color: fileFlowColors.primary.dark },
+        body1: { lineHeight: 1.6 }
+    },
     palette: {
-        primary: { main: fileFlowColors.primary.main, dark: fileFlowColors.primary.dark, light: fileFlowColors.primary.light },
-        secondary: { main: fileFlowColors.secondary.main, light: fileFlowColors.secondary.light },
-        warning: { main: fileFlowColors.accent.main, light: fileFlowColors.accent.light },
-        text: { primary: fileFlowColors.text.primary, secondary: fileFlowColors.text.secondary },
+        primary: { main: fileFlowColors.primary.main, light: fileFlowColors.primary.light, dark: fileFlowColors.primary.dark },
+        secondary: { main: fileFlowColors.secondary.main, light: fileFlowColors.secondary.light, dark: fileFlowColors.secondary.dark }, 
+        warning: { main: fileFlowColors.warning.main }, 
         background: { default: fileFlowColors.background.default, paper: fileFlowColors.background.paper },
+        text: { primary: fileFlowColors.text.primary, secondary: fileFlowColors.text.secondary } 
+    },
+    // กำหนด Button Contained หลักให้ใช้ Gradient (หากต้องการ)
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                contained: {
+                    // หากต้องการใช้ Gradient ต้องเขียน CSS Inline หรือใช้ Box ครอบ
+                },
+            },
+        },
+        MuiPaper: {
+            styleOverrides: {
+                // อัปเดต Paper ให้ใช้ Background/Paper ใหม่
+                root: {
+                    backgroundColor: fileFlowColors.background.paper, 
+                }
+            }
+        }
     },
 });
 
+const timelineData = [
+    { year: '2023', event: 'ก่อตั้งบริษัท Happy Soft', detail: 'เริ่มต้นด้วยทีมงานขนาดเล็กแต่เปี่ยมด้วยความมุ่งมั่นและประสบการณ์ เพื่อให้บริการพัฒนาซอฟต์แวร์เฉพาะทางแก่ธุรกิจในขอนแก่นและภาคอีสาน' },
+    { year: '2023 (ปลายปี)', event: 'เปิดตัวโซลูชั่นระบบสมาชิก', detail: 'ขยายบริการสู่การพัฒนาระบบบริหารจัดการสมาชิกและโปรแกรม Loyalty ตอบโจทย์ธุรกิจที่ต้องการสร้างรายได้ต่อเนื่องและลูกค้าประจำ' },
+    { year: '2024', event: 'ขยายทีมงานและบริการ Smart Solution', detail: 'เพิ่มจำนวนผู้เชี่ยวชาญในทีม และเริ่มให้บริการโซลูชั่นบ้านและธุรกิจอัจฉริยะ (IoT) เพื่อตอบสนองความต้องการด้านเทคโนโลยีที่หลากหลายขึ้น' },
+    { year: '2024 (ปลายปี)', event: 'เปิดตัวบริการฝึกอบรมและให้คำปรึกษา', detail: 'ริเริ่มโปรแกรมฝึกอบรมเฉพาะทางด้านเทคโนโลยีและการบริหารจัดการ เพื่อช่วยพัฒนาศักยภาพบุคลากรให้กับองค์กรลูกค้า' },
+    { year: '2025', event: 'เสริมทัพด้วยบริการการตลาดออนไลน์ครบวงจร', detail: 'เพิ่มบริการด้านการตลาดดิจิทัล เพื่อช่วยให้ลูกค้าของเราสามารถโปรโมทธุรกิจและเข้าถึงกลุ่มเป้าหมายในโลกออนไลน์ได้อย่างมีประสิทธิภาพ' },
+    { year: 'ปัจจุบันและอนาคต', event: 'มุ่งมั่นสู่นวัตกรรมและความเป็นเลิศ', detail: 'ยังคงมุ่งมั่นพัฒนานวัตกรรมโซลูชั่นใหม่ๆ และยกระดับการบริการอย่างต่อเนื่อง' },
+];
 
-// Sub Component สำหรับ Timeline Item (ใช้สีจาก Theme)
-const TimelineItem = ({ year, text, theme }) => (
-    <Box sx={{ position: 'relative', pb: 4 }}>
-        <Box 
-            sx={{
-                position: 'absolute',
-                left: '-32px',
-                top: 0,
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                backgroundColor: theme.palette.secondary.main,
-                border: `3px solid ${theme.palette.primary.light}`,
-            }}
-        />
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.primary.dark, mb: 0.5 }}>
-            {year}:
-        </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
-            {text}
-        </Typography>
-    </Box>
-);
+const teamData = [
+    { name: 'สมชาย ใจดี', title: 'CEO & Founder', bio: 'ผู้ก่อตั้งและผู้นำวิสัยทัศน์ของ Happy Soft ด้วยประสบการณ์กว่า 15 ปีในวงการเทคโนโลยี' },
+    { name: 'วิชัย เทคโน', title: 'CTO', bio: 'ผู้เชี่ยวชาญด้านเทคโนโลยีที่มีความรู้ลึกซึ้งในการพัฒนาซอฟต์แวร์และระบบที่ซับซ้อน' },
+    { name: 'สุดา มาร์เก็ตติ้ง', title: 'Marketing Director', bio: 'ผู้เชี่ยวชาญด้านการตลาดดิจิทัลที่มีความเข้าใจลึกซึ้งในพฤติกรรมผู้บริโภคและกลยุทธ์การตลาด' },
+];
 
+const statsData = [
+    { value: '2+', label: 'ปีประสบการณ์' },
+    { value: '23+', label: 'โปรเจกต์สำเร็จ' },
+    { value: '23+', label: 'ลูกค้าที่ไว้วางใจและเติบโตไปด้วยกัน' },
+    { value: '100+', label: 'ลูกค้าที่พึงพอใจ' },
+];
 
-function AboutPage({ user, onLogout }) { 
-    // ⚠️ ใช้ useTheme() ภายใน ThemeProvider ที่หุ้ม Component นี้
-  return (
-    <ThemeProvider theme={aboutTheme}>
-        <PageContent user={user} onLogout={onLogout} />
-    </ThemeProvider>
-  );
-}
-
-// แยก Content ออกมาเพื่อใช้ useTheme() ได้อย่างถูกต้อง
-const PageContent = ({ user, onLogout }) => {
-    const theme = useTheme();
+function AboutPage() {
+    // ใช้ theme ใหม่: fileFlowTheme
+    const theme = fileFlowTheme; 
+    
+    // ฟังก์ชันสมมติสำหรับการนำทาง
+    const handleConsultClick = () => {
+        console.log("Navigate to Contact Page for consultation");
+        // ใน React Router ควรใช้ navigate('/contact')
+    };
+    const handleWorkWithUsClick = () => {
+        console.log("Navigate to Careers Page");
+    };
 
     return (
-        <Box sx={{ background: theme.palette.background.default, color: theme.palette.text.primary, minHeight: '100vh', paddingTop: '1px' }}>
-            
-            {/* Hero Section - จัดสไตล์ตามธีม FileFlow */}
-            <Box 
-                sx={{
-                    // ✅ ใช้สี Primary Main (#00AEEF)
-                    background: theme.palette.primary.main,
-                    color: 'white',
-                    textAlign: 'center',
-                    padding: { xs: '60px 20px', md: '80px 20px' },
-                    boxShadow: 3
-                }}
-            >
-                <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
-                    เกี่ยวกับ Happy Soft
-                </Typography>
-                <Typography variant="h6">
-                    ผู้นำด้านนวัตกรรมเทคโนโลยีที่มุ่งมั่นพัฒนาโซลูชันเพื่อขับเคลื่อนธุรกิจไทย
-                </Typography>
-            </Box>
+        <ThemeProvider theme={theme}>
+            {/* พื้นหลังหลัก (Background Default: #E0F7FA) */}
+            <Box sx={{ background: theme.palette.background.default, minHeight: '100vh' }}>
 
-            {/* Content Section */}
-            <Container maxWidth="md" sx={{ py: 6 }}>
-                {/* วิสัยทัศน์ */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" component="h2" sx={{ fontWeight: 600, color: theme.palette.primary.dark, mb: 2 }}>
-                        วิสัยทัศน์
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: theme.palette.text.primary }}>
-                        เป็นผู้นำในการสร้างสรรค์โซลูชันเทคโนโลยีที่ชาญฉลาดและสร้างผลกระทบเชิงบวกที่ยั่งยืนให้กับธุรกิจและสังคมในประเทศไทยและภูมิภาค
-                    </Typography>
-                </Box>
-
-                {/* พันธกิจ */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" component="h2" sx={{ fontWeight: 600, color: theme.palette.primary.dark, mb: 2 }}>
-                        พันธกิจ
-                    </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: theme.palette.text.primary }}>
-                        เป็นพันธมิตรทางเทคโนโลยีที่เชื่อถือได้และสร้างสรรค์ (Trusted & Innovative Technology Partner)
-                        สำหรับธุรกิจทุกขนาด
-                    </Typography>
-                </Box>
-
-                {/* ค่านิยมหลัก (Core Values) - ใช้ List Item ที่มี Border Accent */}
-                <Box sx={{ mb: 6 }}>
-                    <Typography variant="h4" component="h2" sx={{ fontWeight: 600, color: theme.palette.primary.dark, mb: 2 }}>
-                        ค่านิยมหลัก (Core Values)
-                    </Typography>
-                    <List sx={{ p: 0 }}>
-                        <ListItem disablePadding sx={{ mb: 1, borderLeft: `5px solid ${theme.palette.secondary.main}`, pl: 2, backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}>
-                            <ListItemText primary="มุ่งเน้นลูกค้าเป็นศูนย์กลาง (Customer-Centricity)" primaryTypographyProps={{ fontWeight: 500 }} />
-                        </ListItem>
-                        <ListItem disablePadding sx={{ mb: 1, borderLeft: `5px solid ${theme.palette.secondary.main}`, pl: 2, backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}>
-                            <ListItemText primary="ขับเคลื่อนด้วยนวัตกรรมและความเป็นเลิศ (Innovation & Excellence)" primaryTypographyProps={{ fontWeight: 500 }} />
-                        </ListItem>
-                        <ListItem disablePadding sx={{ mb: 1, borderLeft: `5px solid ${theme.palette.secondary.main}`, pl: 2, backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}>
-                            <ListItemText primary="ซื่อสัตย์และโปร่งใสในทุกขั้นตอน (Integrity & Transparency)" primaryTypographyProps={{ fontWeight: 500 }} />
-                        </ListItem>
-                        <ListItem disablePadding sx={{ mb: 1, borderLeft: `5px solid ${theme.palette.secondary.main}`, pl: 2, backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}>
-                            <ListItemText primary="พลังแห่งการทำงานเป็นทีมและความร่วมมือ (Teamwork & Collaboration)" primaryTypographyProps={{ fontWeight: 500 }} />
-                        </ListItem>
-                        <ListItem disablePadding sx={{ mb: 1, borderLeft: `5px solid ${theme.palette.secondary.main}`, pl: 2, backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}>
-                            <ListItemText primary="ความรับผิดชอบและพัฒนาอย่างไม่หยุดยั้ง (Accountability & Continuous Growth)" primaryTypographyProps={{ fontWeight: 500 }} />
-                        </ListItem>
-                    </List>
+                {/* =================================================== */}
+                {/* 1. Hero Section (สี Accent Coral: FF7F50) */}
+                {/* =================================================== */}
+                <Box 
+                    sx={{
+                        // ⭐️ เปลี่ยนเป็นใช้ fileFlowColors.accent.main
+                        background: fileFlowColors.accent.main, 
+                        color: theme.palette.text.primary, 
+                        padding: { xs: '80px 20px 60px', md: '120px 20px 80px' },
+                        textAlign: 'center',
+                    }}
+                >
+                    <Container maxWidth="md">
+                        <Typography 
+                            variant="h2" 
+                            component="h1" 
+                            sx={{ 
+                                mb: { xs: 2, md: 4 }, 
+                                lineHeight: 1.2, 
+                                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+                            }}
+                        >
+                            เกี่ยวกับ Happy Soft พันธมิตรเทคโนโลยีเพื่อขับเคลื่อนธุรกิจคุณ
+                        </Typography>
+                        
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                maxWidth: '800px', 
+                                margin: '0 auto 40px',
+                                fontSize: { xs: '1rem', md: '1.25rem' },
+                            }}
+                        >
+                            เราคือทีมผู้เชี่ยวชาญด้านการพัฒนาซอฟต์แวร์และนวัตกรรมเทคโนโลยี ที่มุ่งมั่นสร้างสรรค์โซลูชั่นที่ตอบโจทย์และขับเคลื่อนความสำเร็จให้ธุรกิจของคุณอย่างยั่งยืน
+                        </Typography>
+                    </Container>
                 </Box>
                 
-                {/* เส้นทางของเรา (Timeline) */}
-                <Box sx={{ mb: 6 }}>
-                    <Typography variant="h4" component="h2" sx={{ fontWeight: 600, color: theme.palette.primary.dark, mb: 3 }}>
-                        เส้นทางของเรา
+                {/* =================================================== */}
+                {/* 2. Our Story */}
+                {/* =================================================== */}
+                <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+                    <Grid container spacing={5} alignItems="flex-start">
+                        <Grid item xs={12} md={12}>
+                            <Typography variant="h4" component="h2" sx={{ mb: 3, color: theme.palette.primary.dark }}>
+                                เรื่องราวของเรา (Our Story)
+                            </Typography>
+                            <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                                การเดินทางของ Happy Soft เริ่มต้นขึ้นในปี 2023 ด้วยวิสัยทัศน์ที่ชัดเจน: เพื่อเป็นมากกว่าผู้พัฒนาซอฟต์แวร์ แต่เป็นพันธมิตรทางเทคโนโลยีที่แท้จริงซึ่งช่วยให้ธุรกิจไทยสามารถปลดล็อกศักยภาพสูงสุดผ่านนวัตกรรมดิจิทัล
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                ก่อตั้งโดยกลุ่มนักเทคโนโลยีผู้มีประสบการณ์และเปี่ยมด้วยความมุ่งมั่น ที่เล็งเห็นถึงความท้าทายและโอกาสที่เทคโนโลยีสามารถมอบให้แก่ธุรกิจในทุกขนาด จากจุดเริ่มต้นด้วยภารกิจในการช่วยให้องค์กรต่างๆ สามารถนำเทคโนโลยีมาปรับใช้เพื่อบรรลุเป้าหมายทางธุรกิจได้อย่างมีประสิทธิภาพสูงสุด เราได้เติบโตจากทีมพัฒนาขนาดเล็กที่มีความทุ่มเทและคล่องตัว สู่การเป็นผู้ให้บริการโซลูชั่นซอฟต์แวร์และเทคโนโลยีครบวงจรที่ได้รับความไว้วางใจจากลูกค้าหลากหลายอุตสาหกรรม ตั้งแต่สตาร์ทอัพไฟแรงไปจนถึงองค์กรขนาดกลางและใหญ่
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                                ตลอดระยะเวลา **2+ ปี** แห่งการสร้างสรรค์และพัฒนา เราไม่เคยหยุดนิ่งที่จะเรียนรู้เทคโนโลยีใหม่ๆ และปรับปรุงกระบวนการทำงานของเราให้ทันสมัยอยู่เสมอ เพื่อให้มั่นใจว่าโซลูชั่นที่เรานำเสนอไม่เพียงแต่ตอบโจทย์ความต้องการทางธุรกิจในปัจจุบัน แต่ยังมีความยืดหยุ่นและพร้อมรองรับการเปลี่ยนแปลงและความท้าทายในอนาคต นี่คือปรัชญาและหัวใจสำคัญในการสร้างสรรค์ทุกโซลูชั่นของ Happy Soft
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </Container>
+                
+                <Divider sx={{ my: 4, borderColor: theme.palette.primary.light }} />
+
+                {/* =================================================== */}
+                {/* 3. Stats Section */}
+                {/* =================================================== */}
+                <Container maxWidth="lg">
+                    {/* Paper Background: #AEEEEE (ใหม่) */}
+                    <Paper elevation={4} sx={{ mt: -5, p: 4, borderRadius: 2, background: theme.palette.background.paper }}>
+                        <Grid container spacing={3} justifyContent="space-around" textAlign="center">
+                            {statsData.map((stat, index) => (
+                                <Grid item xs={6} sm={3} key={index}>
+                                    <Typography variant="h3" sx={{ color: theme.palette.primary.dark, mb: 0.5 }}>
+                                        {stat.value}
+                                    </Typography>
+                                    <Typography variant="body1" color="text.secondary">
+                                        {stat.label}
+                                    </Typography>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Paper>
+                </Container>
+
+                {/* =================================================== */}
+                {/* 4. Mission, Vision & Core Values */}
+                {/* =================================================== */}
+                <Container maxWidth="lg" sx={{ py: 8 }}>
+                    <Typography variant="h4" align="center" sx={{ mb: 6, color: theme.palette.primary.dark }}>
+                        พันธกิจ วิสัยทัศน์ และค่านิยมหลักของเรา
                     </Typography>
-                    <Box className="timeline" sx={{ borderLeft: `3px solid ${theme.palette.secondary.main}`, pl: 3 }}>
-                        {/* Timeline Items */}
-                        <TimelineItem year="2023" text="ก่อตั้ง Happy Soft และเริ่มพัฒนาโซลูชันซอฟต์แวร์" theme={theme} />
-                        <TimelineItem year="ปลายปี 2023" text="เปิดตัวระบบสมาชิกออนไลน์" theme={theme} />
-                        <TimelineItem year="2024" text="ขยายทีมและบริการ Smart Solution" theme={theme} />
-                        <TimelineItem year="ปลายปี 2024" text="เปิดบริการฝึกอบรมเฉพาะทาง" theme={theme} />
-                        <TimelineItem year="2025" text="เสริมทัพบริการการตลาดออนไลน์ครบวงจร" theme={theme} />
+                    
+                    <Box sx={{ mb: 6 }}>
+                        <Grid container spacing={4} alignItems="stretch">
+                            {/* Mission */}
+                            <Grid item xs={12} md={6}>
+                                {/* Paper Background: #AEEEEE (ใหม่) */}
+                                <Paper elevation={2} sx={{ padding: 4, height: '100%', borderTop: `4px solid ${theme.palette.primary.main}` }}>
+                                    <MissionIcon color="primary" sx={{ fontSize: 40, mb: 2 }} />
+                                    <Typography variant="h5" component="h3" sx={{ mb: 1.5, color: theme.palette.primary.dark }}>
+                                        พันธกิจของเรา (Our Mission)
+                                    </Typography>
+                                    <Typography variant="body1" color="text.primary">
+                                        พันธกิจของ Happy Soft คือการเป็น **“พันธมิตรทางเทคโนโลยีที่เชื่อถือได้และสร้างสรรค์”** เรามุ่งมั่นที่จะนำเสนอโซลูชั่นซอฟต์แวร์และนวัตกรรมดิจิทัลที่ปรับแต่งให้เหมาะสมกับความต้องการเฉพาะของลูกค้าแต่ละราย...
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                            {/* Vision */}
+                            <Grid item xs={12} md={6}>
+                                {/* Paper Background: #AEEEEE (ใหม่) */}
+                                <Paper elevation={2} sx={{ padding: 4, height: '100%', borderTop: `4px solid ${theme.palette.secondary.main}` }}>
+                                    <VisionIcon color="secondary" sx={{ fontSize: 40, mb: 2 }} />
+                                    <Typography variant="h5" component="h3" sx={{ mb: 1.5, color: theme.palette.primary.dark }}>
+                                        วิสัยทัศน์ของเรา (Our Vision)
+                                    </Typography>
+                                    <Typography variant="body1" color="text.primary">
+                                        เรามุ่งหวังที่จะเป็น “ผู้นำในการสร้างสรรค์โซลูชั่นเทคโนโลยีที่ชาญฉลาดและสร้างผลกระทบเชิงบวกที่ยั่งยืน” ให้กับธุรกิจและสังคมในประเทศไทยและภูมิภาค...
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                        </Grid>
                     </Box>
+
+                    {/* Core Values */}
+                    <Typography variant="h5" align="center" sx={{ my: 4, color: theme.palette.primary.dark }}>
+                        ค่านิยมหลักของเรา (Our Core Values)
+                    </Typography>
+                    <Grid container spacing={3}>
+                        {[
+                            { icon: StarIcon, title: 'มุ่งเน้นลูกค้าเป็นศูนย์กลาง (Customer-Centricity)', desc: 'เราให้ความสำคัญสูงสุดกับความเข้าใจในความต้องการและความสำเร็จของลูกค้า...' },
+                            { icon: GrowthIcon, title: 'ขับเคลื่อนด้วยนวัตกรรมและความเป็นเลิศ (Innovation & Excellence Driven)', desc: 'เราไม่หยุดนิ่งที่จะเรียนรู้ ค้นคว้า และนำเทคโนโลยีใหม่ๆ มาประยุกต์ใช้ในการสร้างสรรค์โซลูชั่นที่ล้ำสมัย...' },
+                            { icon: CheckIcon, title: 'ความซื่อสัตย์และความโปร่งใสในทุกขั้นตอน (Integrity & Transparency)', desc: 'เราดำเนินธุรกิจด้วยความซื่อสัตย์สุจริต ยึดมั่นในหลักธรรมาภิบาล และเปิดเผย โปร่งใสในทุกขั้นตอนการทำงาน...' },
+                            { icon: TeamworkIcon, title: 'พลังแห่งการทำงานเป็นทีมและความร่วมมือ (Teamwork & Collaborative Spirit)', desc: 'เราเชื่อมั่นในพลังของการทำงานเป็นทีม ทั้งภายในองค์กรที่หลากหลายด้วยความสามารถ...' },
+                            { icon: HistoryIcon, title: 'ความรับผิดชอบและการพัฒนาอย่างไม่หยุดยั้ง (Accountability & Continuous Growth)', desc: 'เรามีความรับผิดชอบต่อคำมั่นสัญญาและผลงานที่เราส่งมอบ พร้อมทั้งมุ่งมั่นที่จะพัฒนาตนเอง...' },
+                        ].map((item, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={index}>
+                                <Box sx={{ p: 2, borderLeft: `3px solid ${theme.palette.primary.light}` }}>
+                                    <item.icon color="primary" sx={{ fontSize: 30, mb: 1 }} />
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>{item.title}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{item.desc}</Typography>
+                                </Box>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+
+                {/* =================================================== */}
+                {/* 5. Why Choose Us (พื้นหลัง Primary Blue) */}
+                {/* =================================================== */}
+                <Box sx={{ background: theme.palette.primary.main, py: 8, color: 'white' }}>
+                    <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+                        <Typography variant="h4" sx={{ mb: 4, color: theme.palette.warning.main }}>
+                            ทำไมต้องเลือกเรา
+                        </Typography>
+                        <List sx={{ textAlign: 'left', margin: '0 auto', maxWidth: 800 }}>
+                            {/* ... List Items ... */}
+                            {['ความเชี่ยวชาญและประสบการณ์ที่พิสูจน์ได้...', 'โซลูชั่นที่ปรับแต่งเพื่อคุณโดยเฉพาะ...', 'เทคโนโลยีที่ทันสมัยและมีประสิทธิภาพ...', 'ทีมงานมืออาชีพที่พร้อมสนับสนุนและใส่ใจ...', 'มุ่งเน้นผลลัพธ์และความสำเร็จของคุณเป็นสำคัญ...'].map((text, index) => (
+                                <ListItem key={index}>
+                                    {/* ⭐️ ใช้ Secondary.light ที่เป็น Seafoam */}
+                                    <ListItemIcon><StarIcon sx={{ color: theme.palette.secondary.light }} /></ListItemIcon> 
+                                    <ListItemText primary={<Typography variant="body1" sx={{ color: 'white' }}>{text}</Typography>} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Container>
                 </Box>
 
-            </Container>
+                {/* =================================================== */}
+                {/* 6. Our Journey (Timeline) */}
+                {/* =================================================== */}
+                <Container maxWidth="lg" sx={{ py: 8 }}>
+                    <Box sx={{ my: 0, textAlign: 'center' }}>
+                        <Typography variant="h4" sx={{ mb: 5 }}>
+                            การเดินทางและหมุดหมายสำคัญของเรา
+                        </Typography>
+                        
+                        <Grid container spacing={4} justifyContent="center">
+                            {timelineData.map((item, index) => (
+                                <Grid item xs={12} sm={6} md={2.4} key={index}>
+                                    <Box sx={{ borderTop: `4px solid ${theme.palette.primary.light}`, pt: 2, position: 'relative' }}>
+                                        <Box sx={{ 
+                                            width: 15, height: 15, borderRadius: '50%', 
+                                            backgroundColor: theme.palette.primary.main, 
+                                            position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)'
+                                        }} />
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.dark }}>
+                                            {item.year}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                            {item.event}
+                                        </Typography>
+                                    </Box>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
+                </Container>
+                
+                {/* =================================================== */}
+                {/* 7. PARTNER CTA SECTION */}
+                {/* =================================================== */}
+                <Box 
+                    sx={{ 
+                        background: theme.palette.background.default, // Background Default: #E0F7FA
+                        py: { xs: 8, md: 10 }, 
+                        textAlign: 'center' 
+                    }}
+                >
+                    <Container maxWidth="md">
+                        <Typography 
+                            variant="h3" 
+                            component="h2" 
+                            sx={{ 
+                                mb: 2, 
+                                fontWeight: 800,
+                                // ⭐️ เปลี่ยนเป็นใช้ fileFlowColors.accent.main
+                                color: fileFlowColors.accent.main, 
+                                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+                            }}
+                        >
+                            ร่วมเป็นส่วนหนึ่งของการเดินทางสู่ความสำเร็จกับ <br/>
+                            Happy Soft
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 800, margin: '0 auto 40px' }}>
+                            ไม่ว่าคุณกำลังมองหาพันธมิตรเพื่อพัฒนาโครงการซอฟต์แวร์ใหม่, ต้องการปรับปรุงการทำงานให้มีประสิทธิภาพขึ้น, หรือต้องการคำปรึกษาด้านเทคโนโลยีรายทางธุรกิจ Happy Soft ยินดีที่จะรับฟังความต้องการของคุณและเป็นส่วนหนึ่งในการสร้างสรรค์ความสำเร็จนั้น ติดต่อเราวันนี้เพื่อเริ่มต้นการสนทนาและค้นพบโซลูชั่นที่ดีที่สุดสำหรับคุณ
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                            <Button 
+                                variant="contained" 
+                                size="large" 
+                                sx={{ 
+                                    // ⭐️ ปุ่ม Contained ใช้สี Coral Accent
+                                    backgroundColor: fileFlowColors.accent.main, 
+                                    color: 'white', 
+                                    fontWeight: 700,
+                                    padding: '10px 30px',
+                                    '&:hover': { backgroundColor: theme.palette.primary.dark } // Hover: Primary Dark
+                                }}
+                                onClick={handleConsultClick}
+                            >
+                                ติดต่อเราเพื่อขอรับคำปรึกษาฟรี
+                            </Button>
+                            <Button 
+                                variant="outlined" 
+                                size="large" 
+                                sx={{ 
+                                    // ⭐️ ปุ่ม Outlined ใช้เส้นขอบ/ข้อความสี Coral Accent
+                                    color: fileFlowColors.accent.main,
+                                    borderColor: fileFlowColors.accent.main,
+                                    fontWeight: 700,
+                                    padding: '10px 30px',
+                                    '&:hover': { 
+                                        backgroundColor: 'rgba(255, 127, 80, 0.05)', // Coral translucent
+                                        borderColor: fileFlowColors.accent.main,
+                                    }
+                                }}
+                                onClick={handleWorkWithUsClick}
+                            >
+                                ร่วมงานกับเรา
+                            </Button>
+                        </Box>
+                    </Container>
+                </Box>
 
-            {/* Footer Placeholder */}
-            <Box component="footer" sx={{ background: theme.palette.primary.dark, color: theme.palette.secondary.light, textAlign: 'center', py: 4, mt: 4 }}>
-                <Typography variant="subtitle1">
-                    ร่วมเป็นส่วนหนึ่งของการเดินทางสู่ความสำเร็จกับ Happy Soft
-                </Typography>
-            </Box>
-        </Box>
+                {/* =================================================== */}
+                {/* 8. Meet Our Dedicated Team */}
+                {/* =================================================== */}
+                <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ mb: 2, color: theme.palette.primary.dark }}>
+                        พบกับทีมงานผู้เชี่ยวชาญของเรา
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 6, maxWidth: 800, margin: '0 auto' }}>
+                        ความสำเร็จของ Happy Soft ไม่สามารถเกิดขึ้นได้หากปราศจากทีมงานผู้มีความสามารถ, ความมุ่งมั่น, และใจรักในเทคโนโลยี เราคือกลุ่มคนรุ่นใหม่และผู้มีประสบการณ์ที่พร้อมจะนำความเชี่ยวชาญและพลังสร้างสรรค์มาเปลี่ยนไอเดียของคุณให้เป็นจริง
+                    </Typography>
+                    
+                    <Grid container spacing={4} justifyContent="center">
+                        {teamData.map((member, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={index}>
+                                {/* Paper Background: #AEEEEE (ใหม่) */}
+                                <Paper elevation={3} sx={{ p: 3, height: '100%', background: theme.palette.background.paper }}>
+                                    <TeamMemberIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, color: theme.palette.text.primary }}>{member.name}</Typography>
+                                    <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>{member.title}</Typography>
+                                    <Divider sx={{ my: 1, width: '50%', margin: '0 auto', borderColor: theme.palette.primary.light }} />
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>{member.bio}</Typography>
+                                </Paper>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+                
+                {/* =================================================== */}
+                {/* 9. Footer (Final Footer) */}
+                {/* =================================================== */}
+                <Box component="footer" sx={{ background: fileFlowColors.footer_bg, color: 'white', padding: 6 }}>
+                    <Container maxWidth="lg">
+                        
+                        {/* 9.1: ส่วนสมัครรับข่าวสาร */}
+                        <Grid container spacing={4} alignItems="flex-start" sx={{ mb: 4 }}>
+                            <Grid item xs={12} md={6}>
+                                <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 700 }}>รับข่าวสารและบทความล่าสุด</Typography>
+                                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                    สมัครรับจดหมายข่าวของเราเพื่อรับข้อมูลล่าสุดเกี่ยวกับเทคโนโลยี โปรโมชั่น และเคล็ดลับการทำธุรกิจ
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1.5 }}>
+                                    <TextField
+                                        label="อีเมลของคุณ"
+                                        variant="filled"
+                                        fullWidth
+                                        InputProps={{ style: { color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+                                        InputLabelProps={{ style: { color: 'rgba(255, 255, 255, 0.7)' } }}
+                                        sx={{ 
+                                            '& .MuiFilledInput-underline:before': { borderBottomColor: 'rgba(255, 255, 255, 0.4)' },
+                                            '& .MuiFilledInput-underline:after': { borderBottomColor: theme.palette.secondary.main },
+                                        }}
+                                    />
+                                    <Button 
+                                        variant="text" 
+                                        sx={{ 
+                                            color: theme.palette.secondary.main, 
+                                            fontWeight: 700, 
+                                            whiteSpace: 'nowrap',
+                                            '&:hover': { color: theme.palette.secondary.light }
+                                        }}
+                                        endIcon={<ArrowRightIcon />}
+                                    >
+                                        สมัครรับข่าวสาร
+                                    </Button>
+                                </Box>
+                                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
+                                    เราเคารพความเป็นส่วนตัวของคุณและจะไม่แชร์ข้อมูลของคุณกับบุคคลที่สาม
+                                </Typography>
+                            </Grid>
+                        </Grid>
+
+                        <Divider sx={{ my: 4, background: 'rgba(255, 255, 255, 0.2)' }} />
+
+                        {/* 9.2: ส่วนหลัก (Logo, Services, Links, Contact) */}
+                        <Grid container spacing={4}>
+                            {/* Logo/Description */}
+                            <Grid item xs={12} md={4}>
+                                {/* ⭐️ เปลี่ยนเป็นใช้ fileFlowColors.accent.main */}
+                                <Typography variant="h6" sx={{ color: fileFlowColors.accent.main, mb: 1.5 }}>HAPPY SOFT</Typography>
+                                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                    ผู้เชี่ยวชาญด้านการพัฒนาซอฟต์แวร์และนวัตกรรมเทคโนโลยี พร้อมเป็นพาร์ทเนอร์ทางธุรกิจ ที่ช่วยเสริมสร้างศักยภาพและเพิ่มประสิทธิภาพการทำงาน
+                                </Typography>
+                            </Grid>
+                            
+                            {/* Services */}
+                            <Grid item xs={6} md={2}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5 }}>บริการของเรา</Typography>
+                                <List dense sx={{ p: 0 }}>
+                                    {['รับพัฒนาซอฟต์แวร์', 'ระบบบริหารจัดการสมาชิก', 'โซลูชันบ้านและธุรกิจอัจฉริยะ', 'บริการฝึกอบรมเฉพาะทาง', 'การตลาดออนไลน์'].map((item) => (
+                                        <ListItem key={item} sx={{ p: 0, minHeight: 25 }}>
+                                            <ListItemIcon sx={{ minWidth: 28 }}><ArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.5)' }} /></ListItemIcon>
+                                            <ListItemText primary={<Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>{item}</Typography>} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Grid>
+
+                            {/* Quick Links */}
+                            <Grid item xs={6} md={2}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5 }}>ลิงก์ด่วน</Typography>
+                                <List dense sx={{ p: 0 }}>
+                                    {['หน้าแรก', 'บริการของเรา', 'เกี่ยวกับเรา', 'บล็อก', 'ติดต่อเรา'].map((item) => (
+                                        <ListItem key={item} sx={{ p: 0, minHeight: 25 }}>
+                                            <ListItemIcon sx={{ minWidth: 28 }}><ArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.5)' }} /></ListItemIcon>
+                                            <ListItemText primary={<Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>{item}</Typography>} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Grid>
+
+                            {/* Contact Info */}
+                            <Grid item xs={12} md={4}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5 }}>ติดต่อเรา</Typography>
+                                <List dense sx={{ p: 0 }}>
+                                    {/* ⭐️ ใช้ Secondary.light ที่เป็น Seafoam */}
+                                    <ListItem sx={{ p: 0, minHeight: 25, mb: 1 }}><ListItemIcon sx={{ minWidth: 30 }}><LocationOn sx={{ fontSize: 18, color: theme.palette.secondary.light }} /></ListItemIcon><ListItemText primary={<Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>69 ม.18 ต.หนองโก อ.กระนวน จ.ขอนแก่น 40170</Typography>} /></ListItem>
+                                    {/* ⭐️ ใช้ Secondary.light ที่เป็น Seafoam */}
+                                    <ListItem sx={{ p: 0, minHeight: 25, mb: 1 }}><ListItemIcon sx={{ minWidth: 30 }}><Phone sx={{ fontSize: 18, color: theme.palette.secondary.light }} /></ListItemIcon><ListItemText primary={<Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>082-898-9932</Typography>} /></ListItem>
+                                    {/* ⭐️ ใช้ Secondary.light ที่เป็น Seafoam */}
+                                    <ListItem sx={{ p: 0, minHeight: 25, mb: 2 }}><ListItemIcon sx={{ minWidth: 30 }}><Mail sx={{ fontSize: 18, color: theme.palette.secondary.light }} /></ListItemIcon><ListItemText primary={<Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>happysoftth@gmail.com</Typography>} /></ListItem>
+                                    <Button 
+                                        variant="outlined" 
+                                        size="small" 
+                                        sx={{ 
+                                            // ⭐️ ใช้ Secondary.light ที่เป็น Seafoam
+                                            color: theme.palette.secondary.light, 
+                                            borderColor: theme.palette.secondary.light,
+                                            fontWeight: 600, 
+                                            '&:hover': { borderColor: theme.palette.secondary.light, background: 'rgba(76, 175, 80, 0.1)' }
+                                        }}
+                                    >
+                                        ติดต่อเรา
+                                    </Button>
+                                </List>
+                            </Grid>
+                        </Grid>
+
+                        <Divider sx={{ my: 3, background: 'rgba(255, 255, 255, 0.2)' }} />
+
+                        {/* 9.3: Sub-Footer (ลิขสิทธิ์และลิงก์เสริมด้านล่าง) */}
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)', mb: { xs: 1, md: 0 } }}>
+                                © 2025 Happy Soft. สงวนลิขสิทธิ์ทั้งหมด
+                            </Typography>
+                            <Box>
+                                {['เงื่อนไขการใช้งาน', 'นโยบายความเป็นส่วนตัว', 'นโยบายคุกกี้', 'แผนผังเว็บไซต์'].map((link, index) => (
+                                    <MuiLink 
+                                        href="#" 
+                                        key={link} 
+                                        sx={{ 
+                                            color: 'rgba(255, 255, 255, 0.5)', 
+                                            fontSize: '0.8rem', 
+                                            textDecoration: 'none', 
+                                            mx: 1, 
+                                            '&:hover': { color: 'white', textDecoration: 'underline' } 
+                                        }}
+                                    >
+                                        {link}
+                                    </MuiLink>
+                                ))}
+                            </Box>
+                        </Box>
+                    </Container>
+                </Box>
+                
+            </Box> 
+        </ThemeProvider>
     );
-};
+}
 
 export default AboutPage;

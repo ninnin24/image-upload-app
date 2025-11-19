@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import axios from 'axios';
 import { Box, Typography, Card, useTheme, Grid, Chip } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -9,7 +9,6 @@ const DashboardSummary = () => {
     const [summary, setSummary] = useState({ companies: 0, users: 0, files: 0 });
     const [recentFiles, setRecentFiles] = useState([]);
 
-    // 🔹 Fetch Summary
     useEffect(() => {
         axios.get('/admin/summary', { withCredentials: true }) 
             .then(res => {
@@ -27,7 +26,6 @@ const DashboardSummary = () => {
             .catch(err => console.error('Error fetching recent files:', err));
     }, []);
 
-    // 🔹 Format Functions
     const formatDate = date => new Date(date).toLocaleString('th-TH', { 
         year: 'numeric', 
         month: 'short', 
@@ -44,14 +42,12 @@ const DashboardSummary = () => {
         return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + s[i];
     };
 
-    // 🔹 Data for Chart
     const chartData = [
         { name: 'บริษัท', value: summary.companies },
         { name: 'ผู้ใช้', value: summary.users },
         { name: 'ไฟล์', value: summary.files },
     ];
 
-    // 🔹 Stat Card Component
     const StatBox = ({ title, value, icon, color }) => (
         <Card 
             elevation={4} 
@@ -81,9 +77,10 @@ const DashboardSummary = () => {
     );
 
     return (
-        <Box sx={{ flexGrow: 1, px: 0 }}> 
+        <Box sx={{ flexGrow: 1, px: 0 }}>
 
-            {/* ==== Summary Cards (3 ช่องด้านบน) ==== */}
+            {/* 🚫 ลบ Dashboard Title ออกแล้ว */}
+
             <Grid container spacing={2} sx={{ maxWidth: "1100px", margin: "0 auto", mb: 4 }}>
                 <Grid item xs={12} sm={4}>
                     <StatBox 
@@ -111,19 +108,9 @@ const DashboardSummary = () => {
                 </Grid>
             </Grid>
 
-            {/* ==== MAIN CONTENT (GRAPH + RECENT FILES) ==== */}
             <Grid container spacing={3} sx={{ maxWidth: "1100px", margin: "0 auto" }}>
-
-                {/* ==== A. กราฟ ==== */}
                 <Grid item xs={12}>
-                    <Card 
-                        elevation={4} 
-                        sx={{ 
-                            p: 3, 
-                            backgroundColor: theme.palette.background.paper,
-                            borderRadius: '12px'
-                        }}
-                    >
+                    <Card elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
                         <Typography 
                             variant="h6" 
                             sx={{ 
@@ -152,16 +139,8 @@ const DashboardSummary = () => {
                     </Card>
                 </Grid>
 
-                {/* ==== B. รายการไฟล์ล่าสุด ==== */}
                 <Grid item xs={12}>
-                    <Card 
-                        elevation={4} 
-                        sx={{ 
-                            p: 3, 
-                            backgroundColor: theme.palette.background.paper,
-                            borderRadius: '12px'
-                        }}
-                    >
+                    <Card elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
                         <Typography 
                             variant="h6" 
                             sx={{ 
@@ -175,30 +154,20 @@ const DashboardSummary = () => {
                         </Typography>
 
                         {recentFiles.length === 0 ? (
-                            <Typography 
-                                variant="body1" 
-                                sx={{ color: theme.palette.text.secondary, textAlign: "center" }}
-                            >
+                            <Typography variant="body1" sx={{ textAlign: "center" }}>
                                 ยังไม่มีไฟล์อัปโหลดล่าสุด
                             </Typography>
                         ) : (
                             <Box sx={{ display: 'grid', gap: 2 }}>
                                 {recentFiles.map(f => (
-                                    <Box
-                                        key={f.id}
-                                        sx={{
-                                            p: 2,
-                                            backgroundColor: theme.palette.background.default,
-                                            borderLeft: `6px solid ${theme.palette.secondary.main}`,
-                                            borderRadius: 2,
-                                            boxShadow: 2,
-                                            transition: "0.2s",
-                                            "&:hover": {
-                                                transform: "translateX(5px)",
-                                                boxShadow: "0 6px 14px rgba(0,0,0,0.12)"
-                                            }
-                                        }}
-                                    >
+                                    <Box key={f.id} sx={{
+                                        p: 2,
+                                        borderLeft: `6px solid ${theme.palette.secondary.main}`,
+                                        borderRadius: 2,
+                                        boxShadow: 2,
+                                        transition: "0.2s",
+                                        "&:hover": { transform: "translateX(5px)" }
+                                    }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                                             {f.filename || "ไม่ระบุชื่อไฟล์"}
                                         </Typography>
@@ -207,17 +176,13 @@ const DashboardSummary = () => {
                                             <Chip 
                                                 size="small" 
                                                 label={`บริษัท: ${f.company_name || "N/A"}`}
-                                                sx={{
-                                                    background: theme.palette.primary.light,
-                                                    color: theme.palette.primary.dark
-                                                }}
                                             />
                                             <Typography variant="caption">
                                                 ขนาด: {formatFileSize(f.filesize_bytes)}
                                             </Typography>
                                         </Box>
 
-                                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                                        <Typography variant="caption" color="text.secondary">
                                             อัปโหลด: {formatDate(f.uploaded_at)}
                                         </Typography>
                                     </Box>
