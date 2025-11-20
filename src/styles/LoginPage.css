@@ -131,3 +131,44 @@ h2 {
         text-align: center;
     }
 }
+
+.login-box.register-mode {
+    max-width: 450px; /* ขยายความกว้างเล็กน้อยตอน Register */
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0 10px 0;
+    color: #888;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+.divider::before {
+    margin-right: .5em;
+}
+.divider::after {
+    margin-left: .5em;
+}
+
+.switch-mode-container {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.right-action.full-width {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}

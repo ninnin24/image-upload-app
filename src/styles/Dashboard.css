@@ -438,7 +438,8 @@ body {
 
 /* 3. สไตล์ของช่องกรอก (สำคัญ) */
 .form-group input[type="text"],
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group input[type="date"] {
   width: 100%; /* ทำให้ช่องกรอกเต็มความกว้าง */
   padding: 10px 12px;
   font-size: 1rem;
@@ -450,8 +451,34 @@ body {
 
 /* (เพิ่ม) ทำให้ช่องกรอกดูดีขึ้นเมื่อคลิก */
 .form-group input[type="text"]:focus,
-.form-group input[type="number"]:focus {
+.form-group input[type="number"]:focus,
+.form-group input[type="date"]:focus{
   border-color: #007bff; /* สีฟ้า (สีหลัก) */
   box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
   outline: none;
+}
+
+.form-group input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none; 
+  position: relative;
+  color: #333;
+}
+
+/* ปรับแต่งไอคอนปฏิทิน (เฉพาะ Webkit: Chrome, Edge, Safari) */
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent; /* ลบพื้นหลังเดิม */
+  color: transparent;
+  cursor: pointer;
+  
+  /* ใส่ไอคอนใหม่ หรือปรับขนาด */
+  position: absolute;
+  right: 10px;
+  height: 20px;
+  width: 20px;
+  
+  /* เทคนิคเปลี่ยนสีไอคอนเป็นสีเทาเข้ม (หรือสีอื่น) */
+  filter: invert(0.4); 
+  /* ถ้าอยากได้สีฟ้าแบบธีมคุณ ลองใช้ filter นี้: */
+  /* filter: invert(31%) sepia(94%) saturate(1863%) hue-rotate(202deg) brightness(101%) contrast(106%); */
 }

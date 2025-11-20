@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import Select from 'react-select'; // ⭐ 1. Import react-select
+import Select from 'react-select';
 import '../styles/theme.css';
 import '../styles/ReportsAudit.css'; 
 import { VscOutput } from "react-icons/vsc";
@@ -8,7 +8,6 @@ import { IoReturnUpBack } from "react-icons/io5";
 import { AiOutlineReload, AiOutlineClear } from "react-icons/ai";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
 
-// ⭐ 2. ย้าย Options สำหรับ "การกระทำ" ออกมา
 const actionOptions = [
   { value: '', label: 'ทั้งหมด' },
   { value: 'UPLOAD', label: 'UPLOAD' },
@@ -26,7 +25,7 @@ function ReportsAudit() {
 
   // Filters
   const [filterAction, setFilterAction] = useState('');
-  const [filterFileName, setFilterFileName] = useState(''); // now extension filter
+  const [filterFileName, setFilterFileName] = useState('');
 
   // Sorting 
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'descending' });
@@ -61,7 +60,6 @@ function ReportsAudit() {
     }
   };
 
-  // ⭐️ (ฟังก์ชันนี้ถูกต้องแล้ว)
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -91,6 +89,7 @@ function ReportsAudit() {
     [reportData, searchReport]
   );
 
+  // ⭐️ แก้ไขจุดที่ 1: เอาเงื่อนไข N/A ออก เพื่อให้ดึงนามสกุลไฟล์ของ User Personal ได้
   const uniqueExtensions = useMemo(() => {
     if (!selectedGroup) return [];
     const extensions = new Set();
@@ -99,7 +98,8 @@ function ReportsAudit() {
       if (selectedGroup.type === "Company") {
         isInGroup = log.company_name === selectedGroup.name;
       } else if (selectedGroup.type === "User") {
-        isInGroup = log.username === selectedGroup.name && log.company_name === "N/A";
+        // ✅ แก้ไข: เช็คแค่ชื่อ User ก็พอ ไม่ต้องเช็คบริษัท N/A
+        isInGroup = log.username === selectedGroup.name;
       }
       if (isInGroup) {
         const file = log.file_name || "";
@@ -139,6 +139,7 @@ function ReportsAudit() {
     return <FaSortDown style={{ marginLeft: '5px', color: '#2196F3' }} />;
   }, [sortConfig]);
 
+  // ⭐️ แก้ไขจุดที่ 2: เอาเงื่อนไข N/A ออก เพื่อให้ดึง Log มาแสดงได้
   const filteredAndSortedLogs = useMemo(() => {
     return userLogs
       .filter(log => {
@@ -147,7 +148,8 @@ function ReportsAudit() {
           return log.company_name === selectedGroup.name;
         }
         if (selectedGroup.type === 'User') {
-          return log.username === selectedGroup.name && log.company_name === 'N/A';
+          // ✅ แก้ไข: เช็คแค่ชื่อ User ก็พอ ไม่ต้องเช็คบริษัท N/A
+          return log.username === selectedGroup.name;
         }
         return false;
       })
@@ -183,14 +185,11 @@ function ReportsAudit() {
 
   const totalPages = Math.ceil(filteredAndSortedLogs.length / itemsPerPage);
 
-  // ==========================================================
-  // ⭐️ 1. (แก้ไข) แก้ไข logStats
-  // ==========================================================
   const logStats = useMemo(() => {
     const totalSize = filteredAndSortedLogs.reduce((sum, log) => sum + log.file_size_bytes, 0);
     return {
       total: filteredAndSortedLogs.length,
-      totalSize: totalSize, // ⬅️ แก้ไข: ส่งค่ารวม (bytes) ไปตรงๆ
+      totalSize: totalSize,
       uploads: filteredAndSortedLogs.filter(log => log.action_type === 'UPLOAD').length,
       downloads: filteredAndSortedLogs.filter(log => log.action_type === 'DOWNLOAD').length,
       deletes: filteredAndSortedLogs.filter(log => log.action_type === 'DELETE').length
@@ -259,7 +258,7 @@ function ReportsAudit() {
           <div className="search-bar" style={{ maxWidth: '400px' }}>
             <input
               type="text"
-              placeholder="🔍 ค้นหากลุ่มหรือผู้ใช้..."
+              placeholder="ค้นหากลุ่มหรือผู้ใช้..."
               value={searchReport}
               onChange={e => setSearchReport(e.target.value)}
               style={{ width: '100%' }}
@@ -324,7 +323,6 @@ function ReportsAudit() {
           }}>
             <div><strong>รายการทั้งหมด:</strong> {logStats.total}</div>
             
-            {/* ⭐️ 2. (แก้ไข) แก้ไข JSX ที่แสดงผล */}
             <div><strong>ขนาดรวม:</strong> {formatFileSize(logStats.totalSize)}</div>
             
             <div className="action-upload"><strong>อัปโหลด:</strong> {logStats.uploads}</div>
@@ -339,7 +337,7 @@ function ReportsAudit() {
                 options={actionOptions}
                 value={actionOptions.find(opt => opt.value === filterAction)}
                 onChange={selectedOption => setFilterAction(selectedOption.value)}
-                instanceId="action-select" // ID เฉพาะสำหรับ React
+                instanceId="action-select"
                 placeholder="เลือกการกระทำ..."
               />
             </div>
@@ -352,7 +350,7 @@ function ReportsAudit() {
                 onChange={selectedOption => setFilterFileName(selectedOption.value)}
                 instanceId="extension-select"
                 placeholder="เลือกนามสกุล..."
-                isSearchable={true} // เปิดให้ค้นหาได้
+                isSearchable={true}
               />
             </div>
 

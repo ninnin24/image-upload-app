@@ -12,16 +12,10 @@ import UserDashboard from './pages/UserDashboard.jsx';
 import ActivityLog from './pages/ActivityLog'; 
 import PromotionPage from './pages/PromotionPage.jsx'; // ของ User (หน้าเลือกซื้อ)
 import PromotionManagement from './pages/PromotionManagement.jsx'; // ⭐️ (เพิ่ม) ของ Admin (หน้าจัดการ)
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Components
 import Header from './components/Header.jsx';
-
-const ProtectedRoute = ({ user, children, allowedRoles = ['admin', 'user'] }) => {
-    if (!user || !user.role || !allowedRoles.includes(user.role)) {
-        return <Navigate to="/login" replace />;
-    }
-    return children;
-};
 
 function App() {
     const [user, setUser] = useState(undefined);
