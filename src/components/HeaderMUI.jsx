@@ -6,11 +6,54 @@ import {
     Box,
     Typography,
     Link as MuiLink,
+    IconButton,
 } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Language as LanguageIcon, RestoreFromTrash } from '@mui/icons-material';
 
 import FileFlowzLogo from '../assets/logo_ff.png';
+
+
+const getText = (lang, key) => {
+    const texts = {
+        th: {
+            language_button: 'EN / English',
+            logout: 'ออกจากระบบ',
+            login: 'เข้าสู่ระบบ',
+            user_default: 'ผู้ใช้',
+            // Menu Items TH
+            home: 'หน้าหลัก',
+            price: 'ราคา',
+            contact: 'ติดต่อเรา',
+            about: 'เกี่ยวกับเรา',
+            dashboard: 'แดชบอร์ด',
+            upload: 'อัปโหลดไฟล์',
+            mylist: 'รายการของฉัน',
+            activity: 'ประวัติการใช้งาน',
+            docs: 'เอกสาร', 
+            recycle_bin: 'ถังขยะ',
+        },
+        en: {
+            language_button: 'TH / ภาษาไทย',
+            logout: 'Logout',
+            login: 'Login',
+            user_default: 'User',
+            // Menu Items EN
+            home: 'Home',
+            price: 'Pricing',
+            contact: 'Contact Us',
+            about: 'About Us',
+            dashboard: 'Dashboard',
+            upload: 'Upload File',
+            mylist: 'My List',
+            activity: 'Activity History',
+            docs: 'Documentation',
+            recycle_bin: 'Recycle Bin',
+        }
+    };
+    return texts[lang][key] || texts['th'][key];
+};
 
 const fileFlowColors = {
     primary: { dark: '#005377', main: '#00AEEF', light: '#87CEEB' },
@@ -32,19 +75,40 @@ const theme = createTheme({
     },
 });
 
-function HeaderMUI({ user, onLogout }) {
+function HeaderMUI({ user, onLogout, language, setLanguage }) { 
     const navigate = useNavigate();
+    
+    const [localLanguage, setLocalLanguage] = React.useState(language || 'th');
+    const currentLang = language || localLanguage;
+    const currentSetLanguage = setLanguage || setLocalLanguage;
+
 
     const isAdmin = user?.role === 'admin';
     const homePath = isAdmin ? '/admin/dashboard' : user ? '/user/dashboard' : '/';
+
+    const handleLanguageToggle = () => {
+        currentSetLanguage(prevLang => (prevLang === 'th' ? 'en' : 'th'));
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('user');
+
+        if (onLogout) onLogout();
+
+        navigate('/'); 
+    };
 
     const renderMenu = () => {
         const baseProps = {
             sx: {
                 color: 'white',
-                fontWeight: 600,
-                fontSize: '1.05rem',
-                padding: '0.8rem 1rem',
+                // ⬇️ [แก้ไข] ลดขนาดตัวอักษรลง
+                fontWeight: 500, // ลดความหนาของฟอนต์
+                fontSize: '0.9rem', // ลดขนาดฟอนต์ให้เล็กลง
+                padding: '0.5rem 0.75rem', // ลด padding ให้กระชับ
+                whiteSpace: 'nowrap', // ⭐️ [แก้ไข] บังคับให้เป็นบรรทัดเดียว
                 '&:hover': {
                     color: theme.palette.secondary.light,
                     backgroundColor: 'rgba(255,255,255,0.15)',
@@ -53,39 +117,39 @@ function HeaderMUI({ user, onLogout }) {
             },
         };
 
+        // ⭐️ เมนูที่แสดงผล (แบบข้อความ)
         const menuItems = !user
             ? [
-                { to: '/', label: 'หน้าหลัก' },
-                { to: '/pricing', label: 'ราคา' }, // ✅ Public
-                { to: '/contact', label: 'ติดต่อเรา' },
-                { to: '/about', label: 'เกี่ยวกับเรา' },
+                { to: '/', labelKey: 'home' },
+                { to: '/pricing', labelKey: 'price' },
+                { to: '/docs', labelKey: 'docs' },
+                { to: '/contact', labelKey: 'contact' },
+                { to: '/about', labelKey: 'about' },
             ]
             : isAdmin
             ? [
-                { to: '/admin/dashboard', label: 'แดชบอร์ด' },
-                { to: '/pricing', label: 'ราคา' }, // ✅ Admin
-                { to: '/contact', label: 'ติดต่อเรา' },
-            ] 
+                { to: '/admin/dashboard', labelKey: 'dashboard' },
+
+            ]
             : [
-                { to: '/user/dashboard', label: 'หน้าหลัก' },
-                { to: '/upload', label: 'อัปโหลดไฟล์' },
-                { to: '/my-list', label: 'รายการของฉัน' },
-                { to: '/pricing', label: 'ราคา' }, // ✅ Logged-in User
-                { to: '/activity', label: 'ประวัติการใช้งาน' },
-                { to: '/contact', label: 'ติดต่อเรา' },
+                { to: '/user/dashboard', labelKey: 'home' },
+                { to: '/upload', labelKey: 'upload' },
+                { to: '/my-list', labelKey: 'mylist' },
+                { to: '/activity', labelKey: 'activity' },
             ];
 
         return (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            // ปรับ Box ให้มี Gap น้อยลงเพื่อประหยัดพื้นที่
+            <Box sx={{ display: 'flex', gap: 0.5 }}> 
                 {menuItems.map((item, index) => (
                     <Button
                         key={index}
                         {...baseProps}
-                        component={item.to ? Link : MuiLink} 
+                        component={item.to ? Link : MuiLink}
                         to={item.to}
                         href={item.href}
                     >
-                        {item.label}
+                        {getText(currentLang, item.labelKey)} 
                     </Button>
                 ))}
             </Box>
@@ -104,7 +168,8 @@ function HeaderMUI({ user, onLogout }) {
                 }}
             >
                 <Toolbar disableGutters sx={{ justifyContent: 'space-between', px: { xs: 2, md: 4 } }}>
-                    {/* Logo + ชื่อแบรนด์ */}
+                    
+                    {/* Logo */}
                     <Box
                         onClick={() => navigate(homePath)}
                         sx={{
@@ -121,12 +186,11 @@ function HeaderMUI({ user, onLogout }) {
                             style={{
                                 height: '44px',
                                 width: 'auto',
-                                marginRight: '0px', 
+                                marginRight: '0px',
                                 flexShrink: 0,
                                 filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.6))',
                             }}
                         />
-
                         <Typography
                             variant="h6"
                             sx={{
@@ -145,20 +209,58 @@ function HeaderMUI({ user, onLogout }) {
                         {renderMenu()}
                     </Box>
 
-                    {/* ปุ่มขวา */}
+                    {/* ปุ่มขวา: Language Toggle + User Info/Login Button */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+                        {/* ⭐️ ICON: ปุ่มถังขยะ (Recycle Bin) - แสดงเมื่อ User Logged in ⭐️ */}
+                        {user && (
+                            <IconButton 
+                                onClick={() => navigate('/recycle-bin')} 
+                                sx={{ 
+                                    color: fileFlowColors.accent.light, // ใช้สีส้มอ่อน
+                                    '&:hover': { color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.1)' } 
+                                }}
+                                size="large"
+                                aria-label={getText(currentLang, 'recycle_bin')} 
+                            >
+                                <RestoreFromTrash sx={{ fontSize: '1.6rem' }} />
+                            </IconButton>
+                        )}
+                        
+                        {/* ⭐️ ปุ่มเปลี่ยนภาษา ⭐️ */}
+                        <Button
+                            variant="text"
+                            size="small"
+                            onClick={handleLanguageToggle}
+                            startIcon={<LanguageIcon sx={{ fontSize: '1.2rem' }} />}
+                            sx={{
+                                color: theme.palette.secondary.light, // สีอ่อนๆ เพื่อให้เห็นชัดบนพื้นหลังเข้ม
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                padding: '0.5rem 0.75rem',
+                                minWidth: 'unset',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                }
+                            }}
+                        >
+                            {getText(currentLang, 'language_button')}
+                        </Button>
+
+                        {/* User Info/Login/Logout Button */}
                         {user ? (
                             <>
                                 <Typography sx={{ color: theme.palette.secondary.light, fontWeight: 600, fontSize: '1.1rem' }}>
-                                    {user.username || 'ผู้ใช้'}
+                                    {user.username || getText(currentLang, 'user_default')}
                                 </Typography>
                                 <Button
                                     variant="contained"
                                     color="warning"
-                                    onClick={onLogout}
+                                    onClick={handleLogout} 
                                     sx={{ fontWeight: 700, color: 'white', borderRadius: '10px', padding: '0.6rem 1.25rem' }}
                                 >
-                                    ออกจากระบบ
+                                    {getText(currentLang, 'logout')}
                                 </Button>
                             </>
                         ) : (
@@ -168,7 +270,7 @@ function HeaderMUI({ user, onLogout }) {
                                 onClick={() => navigate('/login')}
                                 sx={{ fontWeight: 700, color: theme.palette.text.primary, borderRadius: '10px', padding: '0.6rem 1.25rem' }}
                             >
-                                เข้าสู่ระบบ
+                                {getText(currentLang, 'login')}
                             </Button>
                         )}
                     </Box>
@@ -177,5 +279,5 @@ function HeaderMUI({ user, onLogout }) {
         </ThemeProvider>
     );
 }
-    
+
 export default HeaderMUI;

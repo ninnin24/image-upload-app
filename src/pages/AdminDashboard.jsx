@@ -1,3 +1,5 @@
+/* --- AdminDashboard (จัด layout ใหม่ทั้งหมดให้สวยกว่าเดิม) --- */
+
 import React, { useState } from "react";
 import {
   Box,
@@ -23,7 +25,6 @@ import CompanyManagement from "./CompanyManagement.jsx";
 import UserManagement from "./UserManagement.jsx";
 import ReportsAudit from "./ReportsAudit.jsx";
 
-const ICON_SIZE = 22;
 const DRAWER_WIDTH = 260;
 const HEADER_HEIGHT = 64;
 
@@ -33,24 +34,31 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("summary");
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
   const handleLogout = () => {
-    if (window.confirm("คุณแน่ใจหรือไม่ที่จะออกจากระบบ?")) {
+    if (window.confirm("คุณต้องการออกจากระบบหรือไม่?")) {
       localStorage.clear();
       navigate("/login", { replace: true });
     }
   };
 
   const sidebarItems = [
-    { name: "summary", label: "แดชบอร์ด", icon: <LayoutDashboard size={ICON_SIZE} /> },
-    { name: "companies", label: "จัดการบริษัท", icon: <Folders size={ICON_SIZE} /> },
-    { name: "users", label: "จัดการผู้ใช้", icon: <Users size={ICON_SIZE} /> },
-    { name: "reports", label: "รายงานและตรวจสอบ", icon: <FileText size={ICON_SIZE} /> },
+    { name: "summary", label: "แดชบอร์ด", icon: <LayoutDashboard size={22} /> },
+    { name: "companies", label: "จัดการบริษัท", icon: <Folders size={22} /> },
+    { name: "users", label: "จัดการผู้ใช้", icon: <Users size={22} /> },
+    { name: "reports", label: "รายงานและตรวจสอบ", icon: <FileText size={22} /> },
   ];
 
+  /* ---- Drawer Content ---- */
   const drawerContent = (
-    <Box sx={{ width: DRAWER_WIDTH, height: "100%", bgcolor: "primary.dark", color: "white", pt: 2 }}>
+    <Box
+      sx={{
+        width: DRAWER_WIDTH,
+        height: "100%",
+        bgcolor: "primary.main",
+        color: "white",
+        pt: 2,
+      }}
+    >
       <List>
         {sidebarItems.map((item) => (
           <ListItem key={item.name} disablePadding>
@@ -60,14 +68,23 @@ function AdminDashboard() {
                 setMobileOpen(false);
               }}
               sx={{
-                py: 1.5,
-                bgcolor: activeTab === item.name ? "primary.main" : "transparent",
-                "&:hover": { bgcolor: "secondary.dark" },
-                borderLeft: activeTab === item.name ? `5px solid ${theme.palette.secondary.main}` : "none",
+                py: 1.4,
+                bgcolor:
+                  activeTab === item.name ? "rgba(255,255,255,0.12)" : "transparent",
+                borderLeft:
+                  activeTab === item.name
+                    ? `5px solid ${theme.palette.secondary.main}`
+                    : "5px solid transparent",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
               }}
             >
-              <ListItemIcon sx={{ color: "white", minWidth: 40 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{ fontWeight: 600 }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
@@ -75,19 +92,25 @@ function AdminDashboard() {
     </Box>
   );
 
-  const renderContent = () => {
+  /* ---- Render Content ---- */
+  const renderPage = () => {
     switch (activeTab) {
-      case "summary": return <DashboardSummary />;
-      case "companies": return <CompanyManagement />;
-      case "users": return <UserManagement />;
-      case "reports": return <ReportsAudit />;
-      default: return <DashboardSummary />;
+      case "summary":
+        return <DashboardSummary />;
+      case "companies":
+        return <CompanyManagement />;
+      case "users":
+        return <UserManagement />;
+      case "reports":
+        return <ReportsAudit />;
+      default:
+        return <DashboardSummary />;
     }
   };
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* HEADER */}
+      {/* ---- HEADER ---- */}
       <Box
         sx={{
           position: "fixed",
@@ -101,40 +124,47 @@ function AdminDashboard() {
           alignItems: "center",
           justifyContent: "space-between",
           px: 2,
-          zIndex: theme.zIndex.appBar,
-          boxShadow: 3,
+          zIndex: 1000,
         }}
       >
-        <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center" }}>
-          <IconButton onClick={handleDrawerToggle} sx={{ color: "white" }}>
+        <Box sx={{ display: { xs: "flex", md: "none" } }}>
+          <IconButton sx={{ color: "white" }} onClick={() => setMobileOpen(true)}>
             <MenuIcon />
           </IconButton>
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, display: { xs: "none", md: "block" } }}>
+
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, display: { xs: "none", md: "block" } }}
+        >
           FileFlowz Admin
         </Typography>
+
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Avatar sx={{ bgcolor: "secondary.main", width: 32, height: 32 }}>A</Avatar>
-          <Typography sx={{ fontWeight: 600, display: { xs: "none", sm: "block" } }}>
-            admin_user
-          </Typography>
+          <Typography sx={{ fontWeight: 600 }}>admin_user</Typography>
+
           <Button
             variant="contained"
             size="small"
             endIcon={<LogoutIcon />}
             onClick={handleLogout}
-            sx={{ bgcolor: "#ff5722", "&:hover": { bgcolor: "#e64a19" }, fontWeight: 600 }}
+            sx={{
+              bgcolor: "#ff5722",
+              "&:hover": { bgcolor: "#e64a19" },
+              fontWeight: 600,
+            }}
           >
             ออกจากระบบ
           </Button>
         </Box>
       </Box>
 
-      {/* MOBILE DRAWER */}
+      {/* ---- MOBILE DRAWER ---- */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
-        onClose={handleDrawerToggle}
+        onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", md: "none" },
@@ -148,61 +178,57 @@ function AdminDashboard() {
         {drawerContent}
       </Drawer>
 
-      {/* DESKTOP DRAWER */}
+      {/* ---- DESKTOP DRAWER ---- */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: "none", md: "block" },
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: DRAWER_WIDTH,
             top: HEADER_HEIGHT,
             height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-            position: "sticky",
+            position: "fixed",
           },
         }}
       >
         {drawerContent}
       </Drawer>
 
-      {/* MAIN CONTENT – กล่องกลางจอ + หัวข้ออยู่กึ่งกลาง */}
+      {/* ---- MAIN CONTENT ---- */}
       <Box
-        component="main"
         sx={{
           flexGrow: 1,
           ml: { md: `${DRAWER_WIDTH}px` },
-          mt: `${HEADER_HEIGHT}px`,
+          mt: 0,
+          pt: `${HEADER_HEIGHT}px`,
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
           bgcolor: "background.default",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          p: { xs: 2, sm: 3 },
-          maxWidth: "1400px",
-          mx: "auto",
-          width: "100%",
+          p: 3,
           overflow: "hidden",
         }}
       >
-        {/* หัวข้ออยู่กึ่งกลางจอพอดี */}
         <Typography
           variant="h4"
           sx={{
             fontWeight: 800,
-            mb: 4,
-            textAlign: "center",
-            width: "100%",
-            maxWidth: "1400px",
+            mb: 2,
+            textAlign: "left",
             color: "primary.dark",
           }}
         >
           {sidebarItems.find((i) => i.name === activeTab)?.label}
         </Typography>
 
-        {/* เนื้อหาเลื่อนได้ – ตารางกว้างเต็ม 100% */}
-        <Box sx={{ flex: 1, overflowY: "auto", width: "100%", pb: 2 }}>
-          {renderContent()}
+        {/* กล่องเนื้อหา ให้ scroll ภายในได้ */}
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            overflowY: "auto",
+            pr: 1,
+          }}
+        >
+          {renderPage()}
         </Box>
       </Box>
     </Box>

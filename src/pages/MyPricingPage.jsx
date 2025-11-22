@@ -280,10 +280,10 @@ const PricingCard = ({ plan, isAnnual, isPopular }) => {
                         <BusinessIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle', color: theme.palette.secondary.main }} /> ขีดจำกัด
                     </Typography>
                     <Typography variant="body2" sx={{ ml: 3, color: theme.palette.text.secondary }}>
-                        ผู้ใช้: **{plan.users}**
+                        ผู้ใช้: {plan.users}
                     </Typography>
                     <Typography variant="body2" sx={{ ml: 3, color: theme.palette.text.secondary }}>
-                        เครดิต/เดือน: **{plan.credits}**
+                        เครดิต/เดือน: {plan.credits}
                     </Typography>
                 </Box>
                 
@@ -402,7 +402,7 @@ function MyPricingPage() {
                     <Box sx={{ mt: 6, p: 3, borderTop: `1px solid ${theme.palette.divider}`, textAlign: 'center' }}>
                         <Typography variant="caption" color="text.secondary">
                             <MonetizationOnIcon sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} /> 
-                            * ราคานี้อาจมีการเปลี่ยนแปลงและยังไม่รวมภาษีมูลค่าเพิ่ม สำหรับรายละเอียดเพิ่มเติมกรุณาติดต่อทีมงาน
+                             ราคานี้อาจมีการเปลี่ยนแปลงและยังไม่รวมภาษีมูลค่าเพิ่ม สำหรับรายละเอียดเพิ่มเติมกรุณาติดต่อทีมงาน
                         </Typography>
                     </Box>
                 </Container>

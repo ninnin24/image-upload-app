@@ -1,4 +1,3 @@
-// src/pages/UserDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -66,13 +65,10 @@ function UserDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // ✅ ปิดการเลื่อนเฉพาะหน้านี้
+  // ปิดการเลื่อนเฉพาะหน้านี้
   useEffect(() => {
-    document.body.style.overflow = "hidden"; // ห้ามเลื่อนทั้งหน้าแดชบอร์ด
-
-    return () => {
-      document.body.style.overflow = "auto"; // ออกจากหน้าแดชบอร์ดให้กลับมาเลื่อนปกติ
-    };
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = "auto"; };
   }, []);
 
   const storage = {
@@ -94,6 +90,9 @@ function UserDashboard() {
   };
 
   const goToMyList = () => navigate('/my-list');
+  
+  // แก้ไข: ลบเครื่องหมาย ** ที่ทำให้เกิด Syntax Error
+  const goToUpgrade = () => navigate('/pricing'); 
 
   return (
     <Box
@@ -120,8 +119,9 @@ function UserDashboard() {
         </Typography>
 
         <Grid container spacing={4} sx={{ flex: 1 }}>
-          {/* LEFT CHART */}
-          <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          
+          {/* LEFT PIE CHART */}
+          <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Box sx={{ width: '100%', maxWidth: 280, position: 'relative' }}>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -151,7 +151,7 @@ function UserDashboard() {
                 }}
               >
                 <Typography variant="h3" fontWeight="900" color="primary">
-                  10%
+                  {storage.percentage}%
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   ใช้งานแล้ว
@@ -164,30 +164,34 @@ function UserDashboard() {
                 <Typography variant="body2">
                   <FiberManualRecordIcon sx={{ color: '#1E88E5', fontSize: 14, mr: 0.5 }} /> ใช้แล้ว
                 </Typography>
-                <Typography fontWeight="bold">99.3 MB</Typography>
+                <Typography fontWeight="bold">{storage.used} MB</Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                 <Typography variant="body2">
                   <FiberManualRecordIcon sx={{ color: '#E3F2FD', fontSize: 14, mr: 0.5 }} /> เหลือ
                 </Typography>
-                <Typography fontWeight="bold">924.7 MB</Typography>
+                <Typography fontWeight="bold">{storage.remaining} MB</Typography>
               </Box>
             </Box>
 
+            {/* ปุ่มอัปเกรดพื้นที่ เชื่อมต่อกับ goToUpgrade */}
             <Button
               variant="contained"
               color="secondary"
               fullWidth
               sx={{ mt: 3, py: 1.8, borderRadius: 4, fontSize: '1.1rem' }}
+              onClick={goToUpgrade}
             >
               อัปเกรดพื้นที่
             </Button>
           </Grid>
 
-          {/* RIGHT FILE LIST */}
-          <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ mb: 4 }}>
+          {/* RIGHT SECTION */}
+          <Grid item xs={12} md={9} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            
+            {/* FILE LIST */}
+            <Box sx={{ mb: 4, flexGrow: 0 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h6" fontWeight="bold">ไฟล์ล่าสุด</Typography>
 
@@ -201,51 +205,66 @@ function UserDashboard() {
                 </Button>
               </Box>
 
-              <Grid container spacing={2}>
-                {mockFiles.map((file) => (
-                  <Grid item xs={12} key={file.id}>
-                    <Card
-                      variant="outlined"
-                      sx={{
-                        p: 2,
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        transition: '0.2s',
-                        '&:hover': {
-                          boxShadow: 6,
-                          borderColor: theme.palette.primary.main,
-                        },
-                      }}
-                      onClick={() => openFile(file)}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography fontWeight={600} noWrap>{file.name}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {(file.size / 1024 / 1024).toFixed(1)} MB • {file.date}
-                          </Typography>
-                        </Box>
+              <Box sx={{ maxHeight: 200, overflowY: 'auto', pr: 1 }}>
+                <Grid container spacing={2}>
+                  {mockFiles.map((file) => (
+                    <Grid item xs={12} key={file.id}>
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          p: 2,
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                          transition: '0.2s',
+                          '&:hover': {
+                            boxShadow: 6,
+                            borderColor: theme.palette.primary.main,
+                          },
+                        }}
+                        onClick={() => openFile(file)}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography fontWeight={600} noWrap>{file.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {(file.size / 1024 / 1024).toFixed(1)} MB • {file.date}
+                            </Typography>
+                          </Box>
 
-                        <Tooltip title="เปิดไฟล์">
-                          <IconButton size="small" color="primary">
-                            <FolderOpenIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
+                          <Tooltip title="เปิดไฟล์">
+                            <IconButton size="small" color="primary">
+                              <FolderOpenIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
             </Box>
 
             {/* ACTIVITY LOG */}
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AccessTimeIcon sx={{ mr: 1 }} />
-                <Typography variant="h6" fontWeight="bold">ประวัติการใช้งาน</Typography>
+            <Box sx={{ flexGrow: 1, minHeight: 0 }}> 
+
+              {/* หัวข้อ + ปุ่มดูทั้งหมด */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <AccessTimeIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="bold">ประวัติการใช้งาน</Typography>
+                </Box>
+
+                <Button
+                  variant="text"
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{ color: 'primary.main', fontWeight: 600 }}
+                  onClick={() => navigate('/activity')}
+                >
+                  ดูทั้งหมด
+                </Button>
               </Box>
 
-              <Box sx={{ maxHeight: 180, overflowY: 'auto', pr: 1 }}>
+              <Box sx={{ maxHeight: '100%', overflowY: 'auto', pr: 1 }}>
                 {mockActivities.map((act) => (
                   <Box
                     key={act.id}
@@ -264,8 +283,29 @@ function UserDashboard() {
                     <Typography variant="caption" color="text.secondary">{act.time}</Typography>
                   </Box>
                 ))}
+
+                {/* เพิ่มรายการตัวอย่างให้เกิด scroll */}
+                {mockActivities.map((act, index) => (
+                  <Box
+                    key={`extra-${index}`}
+                    sx={{
+                      p: 1.5,
+                      borderLeft: `4px solid ${act.color}`,
+                      bgcolor: '#fafafa',
+                      borderRadius: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={700} color={act.color}>
+                      กิจกรรมเสริม: {act.action}
+                    </Typography>
+                    <Typography variant="body2" noWrap>{act.file}</Typography>
+                    <Typography variant="caption" color="text.secondary">{act.time}</Typography>
+                  </Box>
+                ))}
               </Box>
             </Box>
+
           </Grid>
         </Grid>
       </Card>

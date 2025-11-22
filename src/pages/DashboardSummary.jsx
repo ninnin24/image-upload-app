@@ -79,9 +79,8 @@ const DashboardSummary = () => {
     return (
         <Box sx={{ flexGrow: 1, px: 0 }}>
 
-            {/* 🚫 ลบ Dashboard Title ออกแล้ว */}
-
-            <Grid container spacing={2} sx={{ maxWidth: "1100px", margin: "0 auto", mb: 4 }}>
+            {/* แก้จุดที่ 1 → เพิ่ม mt:0, pt:0 */}
+            <Grid container spacing={2} sx={{ maxWidth: "1100px", margin: "0 auto", mt: 0, pt: 0, mb: 4 }}>
                 <Grid item xs={12} sm={4}>
                     <StatBox 
                         title="บริษัททั้งหมด" 
@@ -108,7 +107,8 @@ const DashboardSummary = () => {
                 </Grid>
             </Grid>
 
-            <Grid container spacing={3} sx={{ maxWidth: "1100px", margin: "0 auto" }}>
+            {/* แก้จุดที่ 2 → เพิ่ม mt:0, pt:0 */}
+            <Grid container spacing={3} sx={{ maxWidth: "1100px", margin: "0 auto", mt: 0, pt: 0 }}>
                 <Grid item xs={12}>
                     <Card elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
                         <Typography 
