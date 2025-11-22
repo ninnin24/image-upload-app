@@ -1,0 +1,90 @@
+/* src/styles/ExpiryModal.css */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* พื้นหลังสีดำโปร่งแสง */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* ให้แสดงอยู่บนสุด */
+  -webkit-backdrop-filter: blur(3px); /* เพิ่มเอฟเฟกต์เบลอฉากหลังเล็กน้อย */
+  backdrop-filter: blur(3px); /* เพิ่มเอฟเฟกต์เบลอฉากหลังเล็กน้อย */
+}
+
+.modal-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 450px;
+  width: 90%;
+  animation: slide-up 0.4s ease-out; /* เพิ่มอนิเมชั่นตอนปรากฏ */
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  margin-bottom: 20px;
+}
+
+.modal-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.modal-title {
+  margin: 0;
+  color: #d32f2f; /* สีแดงเข้ม */
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.modal-body p {
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  margin-top: 30px;
+}
+
+.modal-confirm-button {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(211, 47, 47, 0.2);
+}
+
+.modal-confirm-button:hover {
+  background-color: #b71c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(211, 47, 47, 0.3);
+}
+
+.modal-confirm-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
+}

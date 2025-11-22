@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Home.css';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import ExpiryModal from '../components/ExpiryModal'; // ⭐️ นำเข้า Component Modal
 
 // ฟังก์ชันแปลงขนาดไฟล์ให้สวยงาม
 const formatFileSize = (bytes) => {
@@ -13,12 +15,14 @@ const formatFileSize = (bytes) => {
 };
 
 function UserDashboard({ user }) {
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userActivities, setUserActivities] = useState([]);
+  const [showExpiryModal, setShowExpiryModal] = useState(false); // ⭐️ State ควบคุม Modal
 
-  // ดึงข้อมูลเมื่อมี user เข้ามา
+  // 1. ดึงข้อมูลเมื่อมี user เข้ามา
   useEffect(() => {
     if (user) {
       setLoading(true);
@@ -40,6 +44,30 @@ function UserDashboard({ user }) {
     }
   }, [user]);
 
+  // 2. ⭐️ Logic เช็ควันหมดอายุแล้วสั่งแสดง Modal
+  useEffect(() => {
+    if (quota && quota.expiry_date) {
+      const now = new Date();
+      
+      // แปลงเวลาจาก DB
+      const expiry = new Date(quota.expiry_date);
+      
+      // ⭐️ ลบ 7 ชั่วโมงออก เพื่อให้เวลาเปรียบเทียบตรงกับเวลาปัจจุบัน (แก้ปัญหา Timezone)
+      expiry.setHours(expiry.getHours() - 7); 
+
+      // ถ้าเวลาปัจจุบัน เลยเวลาหมดอายุ
+      if (now > expiry) {
+        setShowExpiryModal(true); // เปิด Modal แจ้งเตือน
+      }
+    }
+  }, [quota]);
+
+  // ฟังก์ชันเมื่อผู้ใช้กดปุ่มใน Modal
+  const handleExpiryConfirm = () => {
+    setShowExpiryModal(false);
+    navigate('/promotions'); // พาไปหน้าโปรโมชั่น
+  };
+
   // เตรียมข้อมูลสำหรับกราฟวงกลม
   const getQuotaData = () => {
     if (!quota || quota.is_unlimited) return null;
@@ -56,16 +84,13 @@ function UserDashboard({ user }) {
 
   const chartData = getQuotaData();
   const COLORS = ['#FF8042', '#00C49F'];
+  
   const getActionColor = (action) => {
     switch (action) {
-      case 'UPLOAD':
-        return '#28a745'; // สีเขียว
-      case 'DELETE':
-        return '#dc3545'; // สีแดง
-      case 'DOWNLOAD':
-        return '#ffc107'; // สีเหลือง (โทน Amber ให้อ่านออก)
-      default:
-        return '#333';    // สีดำปกติ
+      case 'UPLOAD': return '#28a745';
+      case 'DELETE': return '#dc3545';
+      case 'DOWNLOAD': return '#ffc107';
+      default: return '#333';
     }
   };
 
@@ -74,15 +99,27 @@ function UserDashboard({ user }) {
 
   return (
     <div className="home-container">
+      
+      {/* ⭐️ แสดง Modal แจ้งเตือน */}
+      <ExpiryModal 
+        show={showExpiryModal} 
+        onConfirm={handleExpiryConfirm} 
+      />
+
       <section className="hero">
         <h1>ยินดีต้อนรับ, {user?.username || 'User'}</h1>
         <p>จัดการไฟล์ของคุณได้ง่าย ๆ ที่นี่</p>
       </section>
+
       <div className="dashboard-content-wrapper">
+        
+        {/* --- Quota Section --- */}
         <div className="quota-section">
           <h2>ภาพรวมพื้นที่จัดเก็บ</h2>
           {quota && !quota.is_unlimited && chartData && chartData.length >= 2 ? (
             <div className="chart-content-wrapper" style={{ width: '100%', height: 300, display: 'flex', alignItems: 'center', minWidth: '300px' }}>
+              
+              {/* Chart */}
               <div style={{ flex: '0 0 45%', minWidth: '200px', height: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
                   <PieChart>
@@ -103,6 +140,8 @@ function UserDashboard({ user }) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Legend & Expiry Date */}
               <div className="quota-legend" style={{ flex: 1, paddingLeft: '15px' }}>
                 <h3>{`รวม: ${quota?.storage_quota_gb?.Float64 || 0} GB`}</h3>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -116,6 +155,31 @@ function UserDashboard({ user }) {
                     <strong style={{ marginRight: 5, minWidth: '80px' }}>ว่าง:</strong> 
                     {formatFileSize(chartData[1]?.value || 0)}
                   </li>
+
+                  {/* ⭐️ แสดงวันหมดอายุแบบมีกรอบสีแดง */}
+                  {quota.expiry_date && (
+                    <li style={{ 
+                      marginTop: '15px',
+                      border: '1px solid #ff0000ff', // กรอบสีแดง
+                      backgroundColor: '#fff0f0',    // พื้นหลังสีแดงอ่อน
+                      padding: '10px', 
+                      fontSize: '0.9em',
+                      textAlign: 'center',
+                      color: '#dc3545',
+                      borderRadius: '5px'
+                    }}>
+                      <strong>หมดอายุแพ็คเกจ: </strong> <br/>
+                      {new Date(quota.expiry_date).toLocaleString('th-TH', { 
+                         timeZone: 'UTC', // ⭐️ บังคับใช้เวลาตาม DB
+                         year: 'numeric', 
+                         month: 'short', 
+                         day: 'numeric',
+                         hour: '2-digit', 
+                         minute: '2-digit'
+                      })} น.
+                    </li>
+                  )}
+
                 </ul>
               </div>
             </div>
@@ -127,11 +191,13 @@ function UserDashboard({ user }) {
               <p>คุณสามารถใช้งานได้อย่างเต็มที่</p>
             </div>
           ) : (
-              <div style={{ padding: '40px', textAlign: 'center', color: '#ccc' }}>
+             <div style={{ padding: '40px', textAlign: 'center', color: '#ccc' }}>
                 ไม่มีข้อมูลการใช้งาน
-              </div>
+             </div>
           )}
         </div>
+
+        {/* --- Files Section --- */}
         <div className="files-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h2>ไฟล์ล่าสุด</h2>
@@ -160,6 +226,8 @@ function UserDashboard({ user }) {
           )}
         </div>
       </div> 
+
+      {/* --- Activities Section --- */}
       <div className="dashboard-content-wrapper"> 
         <div className="activities-section"> 
           <h2>กิจกรรมล่าสุด</h2>
@@ -178,7 +246,15 @@ function UserDashboard({ user }) {
                     ชื่อไฟล์: {activity.description}
                   </div>
                   <div style={{ fontSize: '0.8em', color: '#888', marginTop: '5px', textAlign: 'right' }}>
-                    วันที่: {new Date(activity.timestamp).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+                    {/* ⭐️ แสดงวันที่กิจกรรมแบบ UTC */}
+                    วันที่: {new Date(activity.timestamp).toLocaleString('th-TH', { 
+                        timeZone: 'UTC', 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })} น.
                   </div>
                 </div>
               ))}

@@ -425,3 +425,167 @@
         margin-top: 20px; /* จัดระยะห่างเมื่อเรียงเป็นคอลัมน์ */
     }
 }
+
+.promotion-grid-container {
+    display: grid;
+    /* ปรับคอลัมน์อัตโนมัติ: ขั้นต่ำกว้าง 280px ถ้าจอใหญ่ก็เพิ่มจำนวนคอลัมน์เอง */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px 20px;
+}
+
+/* ตัวการ์ด */
+.promotion-card {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #eee;
+    position: relative;
+    overflow: hidden;
+}
+
+/* เอฟเฟกต์ตอนเอาเมาส์ชี้ */
+.promotion-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: var(--primary-main, #007bff);
+}
+
+/* แถบสีด้านบนการ์ดเพื่อความสวยงาม */
+.promotion-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #00C49F, #007bff);
+}
+
+/* ส่วนหัวของการ์ด */
+.promo-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 20px;
+}
+
+.promo-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    color: #333;
+}
+
+.promo-price {
+    color: var(--primary-main, #007bff);
+}
+
+.price-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.price-unit {
+    font-size: 1rem;
+    color: #777;
+}
+
+/* ส่วนเนื้อหา */
+.promo-body {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.quota-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.quota-text {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.detail-text {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* ปุ่มกด */
+.btn-hover-effect:hover {
+    background-color: #0056b3 !important;
+    transform: scale(1.02);
+}
+
+.billing-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 15px;
+}
+
+.billing-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.billing-label.active {
+    color: #007bff; /* สีฟ้าเมื่อเลือก */
+    transform: scale(1.05);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-switch.yearly {
+    background-color: #007bff;
+}
+
+.toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.yearly .toggle-knob {
+    transform: translateX(30px);
+}
+
+.discount-badge {
+    background-color: #ffeeee;
+    color: #dc3545;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 5px;
+    border: 1px solid #ffcaca;
+}
