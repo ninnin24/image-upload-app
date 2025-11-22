@@ -35,8 +35,11 @@
 
 .hero {
     text-align: center;
-    padding: 60px 20px;
-    margin: 70px auto;
+    padding: 50px 20px 25px 10px; 
+    margin-top: 30px;     /* ลองปรับเป็น 60px, 80px หรือตามชอบ */
+    margin-bottom: 10px;  /* ระยะห่างจากกล่องด้านล่าง (อันเดิม) */
+    margin-left: auto;
+    margin-right: auto;
     background: var(--gradient-flow);
     color: white;
 }
@@ -163,14 +166,11 @@
    ======================= */
 .dashboard-content-wrapper {
     display: flex;
-    flex-wrap: wrap; /* ถ้าจอเล็ก ให้ตกบรรทัด */
-    gap: 1rem;
-    
-    /* จัดให้อยู่กลางหน้า */
+    flex-wrap: wrap; 
     width: 100%;
     max-width: 1200px; 
-    margin: 0 auto 2rem auto; /* 0 auto (center) 2rem bottom */
-    padding: 0 20px;
+    margin: 0 auto 10px auto;
+    padding: 0 10px;
     box-sizing: border-box;
 }
 
@@ -179,8 +179,6 @@
    ======================= */
 .dashboard-stats {
     flex: 0 0 300px; /* ⭐️ กว้างคงที่ 300px */
-    gap: 1rem;
-    margin-bottom: 0; /* ⭐️ ลบ margin-bottom เดิมออก */
 }
 
 .stat-card {
@@ -290,4 +288,304 @@
 /* เผื่อ container พ่อมันเป็น flex */
 .container {
   min-width: 0;
+}
+/* =======================
+   ⭐️ 1. MAIN LAYOUT WRAPPER (ตัวจัดระเบียบซ้าย-ขวา)
+   ======================= */
+.dashboard-content-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* อนุญาตให้ตกบรรทัดถ้าจอเล็ก */
+    gap: 5px;       /* ระยะห่างระหว่างกล่องซ้าย-ขวา */
+    
+    /* จัดกึ่งกลางหน้าจอ */
+    width: 100%;
+    max-width: 1200px; 
+    margin: 0 auto 5px auto;
+    padding: 0 5px;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+/* =======================
+   ⭐️ 2. LEFT COLUMN (ส่วน Quota Chart)
+   ======================= */
+/* เราใช้ class นี้แทน .dashboard-stats เดิม เพื่อให้เหมาะกับการใส่กราฟ */
+.quota-section {
+    flex: 4;               /* ให้กว้าง 4 ส่วน */
+    min-width: 350px;      /* ⭐️ สำคัญ: กว้างขั้นต่ำต้องพอให้กราฟ Pie แสดงผลได้ไม่เบี้ยว */
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* จัดการภายในส่วน Quota Chart */
+.chart-content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px; /* ความสูงของพื้นที่กราฟ */
+}
+
+/* =======================
+   ⭐️ 3. RIGHT COLUMN (ส่วน File List)
+   ======================= */
+/* ใช้ class นี้สำหรับกล่องรายการไฟล์ */
+.files-section {
+    flex: 6;               /* ให้กว้าง 6 ส่วน (กว้างกว่ากราฟนิดหน่อย) */
+    min-width: 350px;      /* กว้างขั้นต่ำ */
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    height: 100%;          /* ให้สูงเต็มพื้นที่ */
+}
+
+/* ปรับแต่งรายการไฟล์ให้น่าอ่าน */
+.timeline-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa; /* พื้นหลังสีเทาอ่อน */
+    border-left: 4px solid var(--accent-main, #00C49F); /* เส้นสีด้านหน้า */
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+.timeline-item:hover {
+    transform: translateX(5px); /* ขยับเมื่อเอาเมาส์ชี้ */
+    background-color: #f0f4f8;
+}
+
+/* =======================
+   ⭐️ 4. RESPONSIVE (มือถือ)
+   ======================= */
+@media (max-width: 768px) {
+    .dashboard-content-wrapper {
+        flex-direction: column; /* เรียงแนวตั้งเมื่อจอเล็ก */
+    }
+    
+    .quota-section, 
+    .files-section {
+        width: 100%;       /* กว้างเต็มจอ */
+        min-width: 0;      /* รีเซ็ตค่า min-width */
+        margin-bottom: 20px;
+    }
+    
+    .chart-content-wrapper {
+        flex-direction: column; /* กราฟกับ Legend เรียงตั้งในมือถือ */
+        height: auto;
+        gap: 20px;
+    }
+}
+
+.activities-section {
+    flex: 1; /* ให้ขยายเต็มพื้นที่ตามต้องการ */
+    width: 100%;
+    min-width: 300px; /* กว้างขั้นต่ำ */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.activity-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f8fcfd; /* พื้นหลังสีฟ้าอ่อน */
+    border-left: 4px solid var(--primary-light, #c0e6f6); /* เส้นสีฟ้าด้านหน้า */
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+    transform: translateY(-2px); /* ขยับขึ้นเล็กน้อยเมื่อเอาเมาส์ชี้ */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ปรับแต่งหัวข้อ */
+.activities-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-dark);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* =======================
+    ⭐️ 6. RESPONSIVE (มือถือ)
+   ======================= */
+@media (max-width: 768px) {
+    /* ... (CSS เดิมสำหรับ Responsive) ... */
+
+    .activities-section {
+        margin-top: 20px; /* จัดระยะห่างเมื่อเรียงเป็นคอลัมน์ */
+    }
+}
+
+.promotion-grid-container {
+    display: grid;
+    /* ปรับคอลัมน์อัตโนมัติ: ขั้นต่ำกว้าง 280px ถ้าจอใหญ่ก็เพิ่มจำนวนคอลัมน์เอง */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px 20px;
+}
+
+/* ตัวการ์ด */
+.promotion-card {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #eee;
+    position: relative;
+    overflow: hidden;
+}
+
+/* เอฟเฟกต์ตอนเอาเมาส์ชี้ */
+.promotion-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: var(--primary-main, #007bff);
+}
+
+/* แถบสีด้านบนการ์ดเพื่อความสวยงาม */
+.promotion-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #00C49F, #007bff);
+}
+
+/* ส่วนหัวของการ์ด */
+.promo-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 20px;
+}
+
+.promo-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    color: #333;
+}
+
+.promo-price {
+    color: var(--primary-main, #007bff);
+}
+
+.price-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.price-unit {
+    font-size: 1rem;
+    color: #777;
+}
+
+/* ส่วนเนื้อหา */
+.promo-body {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.quota-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.quota-text {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.detail-text {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* ปุ่มกด */
+.btn-hover-effect:hover {
+    background-color: #0056b3 !important;
+    transform: scale(1.02);
+}
+
+.billing-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 15px;
+}
+
+.billing-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.billing-label.active {
+    color: #007bff; /* สีฟ้าเมื่อเลือก */
+    transform: scale(1.05);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-switch.yearly {
+    background-color: #007bff;
+}
+
+.toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.yearly .toggle-knob {
+    transform: translateX(30px);
+}
+
+.discount-badge {
+    background-color: #ffeeee;
+    color: #dc3545;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 5px;
+    border: 1px solid #ffcaca;
 }

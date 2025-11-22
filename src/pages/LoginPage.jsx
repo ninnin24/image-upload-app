@@ -1,110 +1,139 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // 1. ใช้ axios (ถูกต้อง)
+import axios from 'axios';
 import '../styles/LoginPage.css';
-import HappySoftLogo from '../assets/fileflowz2.png';
+import HappySoftLogo from '../assets/fileflowz2.png'; // ตรวจสอบ path รูปภาพให้ถูกต้อง
 
-function LoginPage({ setUser, isRegister = false }) { 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [isRegistering, setIsRegistering] = useState(isRegister);
+function LoginPage({ setUser, isRegister = false }) {
     const navigate = useNavigate();
+    
+    // State สำหรับโหมด Login/Register
+    const [isRegistering, setIsRegistering] = useState(isRegister);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
+    // State สำหรับข้อมูล Form
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        confirmPassword: '',
+        fullName: '',      // เพิ่ม: ชื่อ-นามสกุล
+        email: '',         // เพิ่ม: อีเมล
+        phone: '',         // เพิ่ม: เบอร์โทร
+        companyName: ''    // เพิ่ม: ชื่อบริษัท (เพื่อให้ Admin รู้ว่าสังกัดไหน)
+    });
+
+    // ฟังก์ชันจัดการการเปลี่ยนค่าใน Input
+    const handleChange = (e) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
+    };
+
+    // --- ส่วนของ Login ---
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (!username || !password) {
-            setError("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
-            return;
-        }
+        setLoading(true);
 
         try {
-            // ⭐️ 1. เปลี่ยนจาก fetch มาใช้ axios.post
-            // axios จะส่ง JSON, จัดการ header, และ credentials ให้อัตโนมัติ (ถ้าตั้งค่า proxy หรือ default)
-            // หรือระบุ withCredentials: true ถ้าจำเป็น
             const response = await axios.post('/login', 
-                { username, password },
-                { withCredentials: true } // ⭐️ 2. ส่ง cookie ไปด้วย
+                { 
+                    username: formData.username, 
+                    password: formData.password 
+                },
+                { withCredentials: true }
             );
 
-            // ⭐️ 3. axios จะคืนข้อมูล data มาใน .data โดยตรง
             const data = response.data;
-            const { role } = data; // ดึง role จาก data ที่ได้มา
+            setUser(data);
 
-            // ⭐️ 4. axios จะ throw error ถ้า response ไม่ใช่ 2xx
-            // ดังนั้นถ้ามาถึงตรงนี้ได้ คือ "สำเร็จ" (ไม่ต้องเช็ค response.ok)
-            
-            setUser(data); 
-
-            if (role === 'admin') {
+            // Redirect ตาม Role
+            if (data.role === 'admin') {
                 navigate('/admin/dashboard', { replace: true });
             } else {
                 navigate('/user/dashboard', { replace: true });
             }
-        
-            // ⭐️ 5. (สำคัญมาก) ลบ window.location.reload(); ทิ้ง
-            // การ reload จะทำลาย State ของ React ที่ setUser เพิ่งตั้งค่าไป
-            // navigate() คือวิธีที่ถูกต้องแล้ว
 
         } catch (err) {
-            // ⭐️ 6. Error handling ของ axios ถูกต้องแล้ว (ใช้ err.response)
             if (err.response) {
                 setError(err.response.data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-            } else if (err.request) {
-                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
             } else {
-                setError('เกิดข้อผิดพลาดบางอย่าง');
+                setError('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
+    // --- ส่วนของ Register ---
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!username || !password) {
-            setError("กรุณากรอกข้อมูลสำหรับลงทะเบียน");
+        // Validation เบื้องต้น
+        if (formData.password !== formData.confirmPassword) {
+            setError("รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน");
+            return;
+        }
+        if (!formData.companyName) {
+            setError("กรุณาระบุชื่อบริษัท");
             return;
         }
 
-        try {
-            // ⭐️ 7. เปลี่ยน handleRegister ให้ใช้ axios ด้วย (เพื่อความสอดคล้อง)
-            await axios.post('/register', { username, password });
+        setLoading(true);
 
-            // ⭐️ 8. ถ้าไม่ Error (catch ไม่ทำงาน) คือสำเร็จ
+        try {
+            // ส่งข้อมูลทั้งหมดตาม Requirement ไปที่ Backend
+            // Backend ต้องทำการสร้าง User และผูกกับ CompanyID (หรือสร้าง Company ใหม่ถ้ายังไม่มี)
+            await axios.post('/register', {
+                username: formData.username,
+                password: formData.password,
+                fullName: formData.fullName,
+                email: formData.email,
+                phone: formData.phone,
+                companyName: formData.companyName,
+                role: 'user' // Default เป็น user เสมอ
+            });
+
             alert("ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ");
-            setIsRegistering(false); 
-            setUsername(''); // เคลียร์ฟอร์ม
-            setPassword(''); // เคลียร์ฟอร์ม
             
+            // รีเซ็ตฟอร์มและกลับไปหน้า Login
+            setIsRegistering(false);
+            setFormData({
+                username: '', password: '', confirmPassword: '',
+                fullName: '', email: '', phone: '', companyName: ''
+            });
+
         } catch (err) {
-            // ⭐️ 9. Error handling ของ axios
             if (err.response) {
-                setError(err.response.data.message || 'การลงทะเบียนล้มเหลว (อาจมีชื่อผู้ใช้นี้แล้ว)');
+                setError(err.response.data.message || 'การลงทะเบียนล้มเหลว');
             } else {
-                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+                setError('เกิดข้อผิดพลาดในการเชื่อมต่อ');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="login-container">
-            <div className="login-box">
-                <img src={HappySoftLogo} alt="HappySoft Logo" className="login-logo" />
+            <div className={`login-box ${isRegistering ? 'register-mode' : ''}`}>
+                <img src={HappySoftLogo} alt="Logo" className="login-logo" />
 
-                {isRegistering ? <h2>สร้างบัญชีผู้ใช้ใหม่</h2> : <h2>เข้าสู่ระบบ</h2>}
+                <h2>{isRegistering ? "สร้างบัญชีผู้ใช้ใหม่" : "เข้าสู่ระบบ"}</h2>
 
                 <form onSubmit={isRegistering ? handleRegister : handleLogin}>
+                    
+                    {/* ส่วนข้อมูลที่ใช้ทั้ง Login และ Register */}
                     <div className="input-group">
-                        <label htmlFor="username">ชื่อผู้ใช้/อีเมล</label>
+                        <label htmlFor="username">ชื่อผู้ใช้ (Username)</label>
                         <input
                             type="text"
                             id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={formData.username}
+                            onChange={handleChange}
                             required
+                            placeholder="กรอกชื่อผู้ใช้ภาษาอังกฤษ"
                         />
                     </div>
 
@@ -113,34 +142,103 @@ function LoginPage({ setUser, isRegister = false }) {
                         <input
                             type="password"
                             id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={formData.password}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
+                    {/* ส่วนที่แสดงเฉพาะตอน Register */}
+                    {isRegistering && (
+                        <>
+                            <div className="input-group">
+                                <label htmlFor="confirmPassword">ยืนยันรหัสผ่าน</label>
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="divider">ข้อมูลส่วนตัว</div>
+
+                            <div className="input-group">
+                                <label htmlFor="fullName">ชื่อ-นามสกุล</label>
+                                <input
+                                    type="text"
+                                    id="fullName"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label htmlFor="email">อีเมล</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label htmlFor="phone">เบอร์โทรศัพท์</label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="divider">ข้อมูลองค์กร</div>
+
+                            <div className="input-group">
+                                <label htmlFor="companyName">ชื่อบริษัท / หน่วยงาน</label>
+                                <input
+                                    type="text"
+                                    id="companyName"
+                                    value={formData.companyName}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="ระบุชื่อบริษัทที่คุณสังกัด"
+                                />
+                            </div>
+                        </>
+                    )}
+
                     {error && <p className="error-message">{error}</p>}
 
-                    <button type="submit" className="login-button">
-                        {isRegistering ? "ลงทะเบียน" : "เข้าสู่ระบบ"}
+                    <button type="submit" className="login-button" disabled={loading}>
+                        {loading ? "กำลังประมวลผล..." : (isRegistering ? "ลงทะเบียน" : "เข้าสู่ระบบ")}
                     </button>
                 </form>
 
                 <div className="switch-mode-container">
-                    <div className="left-action">
-                        <a href="/forgot-password" className="forgot-password">ลืมรหัสผ่าน?</a>
-                    </div>
-                    <div className="right-action">
+                    {!isRegistering && (
+                        <div className="left-action">
+                            <a href="/forgot-password" onClick={(e) => e.preventDefault()} className="forgot-password">
+                                ลืมรหัสผ่าน?
+                            </a>
+                        </div>
+                    )}
+                    <div className={`right-action ${isRegistering ? 'full-width' : ''}`}>
                         <button
                             className="register-toggle-button"
+                            type="button" // สำคัญ: ต้องใส่ type="button" เพื่อไม่ให้ submit form
                             onClick={() => {
                                 setIsRegistering(!isRegistering);
                                 setError('');
-                                setUsername('');
-                                setPassword('');
+                                // Optional: Clear form when switching
                             }}
                         >
-                            {isRegistering ? "เข้าสู่ระบบ" : "ลงทะเบียนบัญชีใหม่"}
+                            {isRegistering ? "กลับไปหน้าเข้าสู่ระบบ" : "ลงทะเบียนบัญชีใหม่"}
                         </button>
                     </div>
                 </div>
